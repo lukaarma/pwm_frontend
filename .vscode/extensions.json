@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "vue.volar",
+        "editorconfig.editorconfig",
+        "dbaeumer.vscode-eslint",
+        "bierner.github-markdown-preview",
+        "esbenp.prettier-vscode",
+        "gruntfuggly.todo-tree",
+        "redhat.vscode-xml"
+    ]
+}
