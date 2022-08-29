@@ -1,10 +1,7 @@
 <template>
     <v-app :theme="darkMode ? 'dark' : 'light'">
         <v-main>
-            <Navbar
-                :darkMode="darkMode"
-                @toggleDarkMode="darkMode = !darkMode"
-            />
+            <Navbar :darkMode="darkMode" @toggleDarkMode="darkMode = !darkMode" />
             <router-view />
             <Footer />
         </v-main>
@@ -21,7 +18,7 @@ const darkModeKey = 'darkMode';
 const darkMode = ref(true);
 
 const config = JSON.parse(localStorage.getItem(darkModeKey) || 'null');
-console.debug(`[CONFIG] Value read from localstorage: ${config}`);
+console.debug(`[CONFIG] Value read from localStorage: ${config}`);
 
 if (config !== null && typeof config === 'boolean') {
     darkMode.value = config;
