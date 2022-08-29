@@ -1,7 +1,9 @@
 <template>
-    <v-form ref="form" v-model="valid" class="w-35 mx-auto mt-8">
+    <v-form ref="form" @submit.prevent="signup" class="w-35 mx-auto mt-8">
         <v-container>
             <v-img src="/assets/logoExtended.svg" class="mx-auto mb-8" />
+
+            <ErrorAlert class="mb-5" :show="signupFailed" :msg="signupFailedMsg" />
             <v-text-field
                 v-model="user.email"
                 label="Email"
@@ -49,54 +51,27 @@
                 :prepend-inner-icon="mdiAccountBox"
                 required
             ></v-text-field>
-
             <div class="text-right">
-                <v-btn @click="resetForm" class="mr-4" size="large">
-                    Clear
-                </v-btn>
-                <v-btn @click="doSignUp" size="large" color="purple">
-                    Signup
-                </v-btn>
-                <v-btn
-                    size="large"
-                    class="ml-4"
-                    color="purple"
-                    @click="showPostSignupDialog = true"
-                >
-                    Open Dialog
-                </v-btn>
+                <v-btn @click="resetForm" class="mr-4" size="large"> Clear </v-btn>
+                <v-btn type="submit" :loading="loading" size="large" color="purple"> Signup </v-btn>
             </div>
         </v-container>
     </v-form>
-
-    <PostSignupDialog
-        :msg="postSignupMessage"
-        :show="showPostSignupDialog"
-        @close="showPostSignupDialog = false"
-        @resendEmail="resendConfirmationEmail"
-    />
-    <ErrorDialog
-        msg="Error on Signup"
-        :show="showSignupErrorDialog"
-        @close="showSignupErrorDialog = false"
-    />
 </template>
 
-<style scoped>
+<style>
 .w-35 {
     width: 35%;
 }
 </style>
 
 <script setup lang="ts">
+import { mdiAccountBox, mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
-import API from '@/services/API';
-import PostSignupDialog from '@/components/PostSignupDialog.vue';
-import ErrorDialog from '@/components/ErrorDialog.vue';
-
-import { mdiAccountBox, mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
+import ErrorAlert from '@/components/ErrorAlert.vue';
+import doSignup from '@/services/signup';
 
 // INPUTS VALUE REF
 const user = ref({
@@ -107,9 +82,13 @@ const user = ref({
     lastName: '',
 });
 
-const valid = ref(false);
+const loading = ref(false);
 const hidePassword = ref(true);
-const showPostSignupDialog = ref(false);
+const signupFailed = ref(false);
+const signupFailedMsg = ref('');
+const signupDone = ref(false);
+const postSignupMessage = ref('');
+
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
 
 const emailRules = [
@@ -120,47 +99,45 @@ const emailRules = [
 const passwordRules = [
     (psw: string) => !!psw || 'Password is required',
     (psw: string) =>
-        (psw.length >= 8 && psw.length <= 32) ||
-        'Password must be between 8 and 32 characters',
-    (psw: string) =>
-        /([A-Z])/.test(psw) || 'Password must contain an uppercase letter!',
-    (psw: string) =>
-        /([a-z])/.test(psw) || 'Password must contain an lowercase letter!',
-    (psw: string) => /([0-9])/.test(psw) || 'Password must cointain a number!',
-    (psw: string) =>
-        /([@$!%*?&])/.test(psw) ||
-        'Password must cointain a special character!',
+        (psw.length >= 8 && psw.length <= 32) || 'Password must be between 8 and 32 characters',
+    (psw: string) => /([A-Z])/.test(psw) || 'Password must contain an uppercase letter!',
+    (psw: string) => /([a-z])/.test(psw) || 'Password must contain an lowercase letter!',
+    (psw: string) => /([0-9])/.test(psw) || 'Password must contain a number!',
+    (psw: string) => /([@$!%*?&])/.test(psw) || 'Password must contain a special character!',
 ];
 
 const repeatPasswordRules = [
     (psw: string) => !!psw || 'Repeat Password is required',
-    (psw: string) =>
-        psw === user.value.password || "The passwords don't match!",
+    (psw: string) => psw === user.value.password || "The passwords don't match!",
 ];
 
 const nameRules = [(name: string) => !!name || 'Name is required'];
-
-// DOM CONTROLL
-const signupDone = ref(false);
-const showSignupErrorDialog = ref(false);
-const postSignupMessage = ref('Test message');
 
 async function resetForm() {
     form.value?.reset();
 }
 
-async function doSignUp(): Promise<void> {
-    if ((await form.value?.validate())?.valid) {
-        await API.signup(user.value).then((res) => {
-            postSignupMessage.value = res.data.message ?? 'test';
-            signupDone.value = true;
-        });
-    } else {
-        showSignupErrorDialog.value = true;
-    }
-}
+async function signup(): Promise<void> {
+    signupFailed.value = false;
+    loading.value = true;
+    console.log('Inizio signup');
 
-function resendConfirmationEmail() {
-    alert('TODO :)');
+    if ((await form.value?.validate())?.valid) {
+        const res = await doSignup(user.value);
+
+        if (res.ok) {
+            signupDone.value = true;
+            // NOTE: api always returns message on success
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            postSignupMessage.value = res.data!.message;
+        } else {
+            console.debug(`[SignupView] Signup failed:  [${res.err.code}] ${res.err.message}`);
+            signupFailed.value = true;
+            signupFailedMsg.value = res.err.message;
+            loading.value = false;
+        }
+    }
+
+    loading.value = false;
 }
 </script>
