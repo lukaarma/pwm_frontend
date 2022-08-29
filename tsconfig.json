@@ -11,7 +11,12 @@
             "@/*": [
                 "./src/*"
             ]
-        }
+        },
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ES2022"
+        ]
     },
     "references": [
         {
