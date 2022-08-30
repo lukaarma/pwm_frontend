@@ -43,7 +43,26 @@ async function signup(user: SignupBody): Promise<APIResponse> {
         });
 }
 
+async function sendVerification(email: string): Promise<APIResponse> {
+    return API.post('/user/sendVerification', { email })
+        .then((res) => {
+            return {
+                data: res.data,
+            };
+        })
+        .catch((err: Error | AxiosError) => {
+            if (axios.isAxiosError(err)) {
+                return {
+                    err: err.response?.data as WebMessage,
+                };
+            } else {
+                throw err;
+            }
+        });
+}
+
 export default {
     login,
     signup,
+    sendVerification,
 };

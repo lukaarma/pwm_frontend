@@ -23,6 +23,11 @@ const router = createRouter({
             component: () => import('@/views/SignupView.vue'),
         },
         {
+            path: '/sendVerification/',
+            name: 'SendVerification',
+            component: () => import('@/views/SendVerificationView.vue'),
+        },
+        {
             path: '/vault',
             name: 'Vault',
             component: () => import('@/views/VaultView.vue'),
