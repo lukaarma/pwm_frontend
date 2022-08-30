@@ -2,7 +2,7 @@
     <v-app :theme="darkMode ? 'dark' : 'light'">
         <v-main>
             <Navbar :darkMode="darkMode" @toggleDarkMode="darkMode = !darkMode" />
-            <router-view />
+            <router-view class="mb-4" />
             <Footer />
         </v-main>
     </v-app>
@@ -33,9 +33,3 @@ watch(darkMode, (newConfig) => {
     console.debug(`[CONFIG] Saved config: ${newConfig}`);
 });
 </script>
-
-<style>
-html {
-    overflow-y: auto;
-}
-</style>

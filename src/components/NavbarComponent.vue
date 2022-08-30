@@ -1,12 +1,12 @@
 <template>
-    <v-app-bar app floating elevation="1">
-        <v-app-bar-nav-icon class="ml-6">
-            <router-link to="/"
-                ><v-img src="/assets/logo.svg" height="50px" width="60px"
-            /></router-link>
+    <v-app-bar app floating elevation="1" height="60">
+        <v-app-bar-nav-icon class="ml-5">
+            <router-link to="/">
+                <v-img src="/assets/logo.svg" height="45px" width="45px" />
+            </router-link>
         </v-app-bar-nav-icon>
+
         <v-spacer />
-        <!-- <v-img src="/assets/logo.svg" /> -->
 
         <template v-if="userStore.state.firstName">
             <span> {{ userStore.state.firstName || 'empty' }} </span>
@@ -28,19 +28,19 @@
                 </v-tooltip>
             </v-btn>
 
-            <v-divider vertical></v-divider>
+            <v-divider vertical />
             <template v-if="userStore.state.firstName">
                 <v-btn to="/vault" :elevation="$route.path === '/vault' ? '10' : '0'">
                     Vault
                 </v-btn>
-                <v-divider vertical></v-divider>
+                <v-divider vertical />
                 <v-btn @click="logout"> Logout </v-btn>
             </template>
             <template v-else>
                 <v-btn to="/login" :elevation="$route.path === '/login' ? '10' : '0'">
                     Login
                 </v-btn>
-                <v-divider vertical></v-divider>
+                <v-divider vertical />
                 <v-btn to="/signup" :elevation="$route.path === '/signup' ? '10' : '0'">
                     Signup
                 </v-btn>
