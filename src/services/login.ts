@@ -1,7 +1,7 @@
 import API from './API';
 import utils, { deriveMKeMPH, decryptPSK } from './cryptoUtils';
 import { userStore } from '@/stores/userStore';
-import type { Result } from '@/types';
+import { WEB_CODES, type Result } from '@/types';
 
 export default async function (email: string, password: string): Promise<Result> {
     console.debug('[LOGIN] Start login sequence');
@@ -29,19 +29,25 @@ export default async function (email: string, password: string): Promise<Result>
 
                 console.debug('[LOGIN] API call success, got name, PSK and IV. Now decrypting...');
 
-                userStore.commit('setFirstName', res.data.firstName);
-
+                userStore.commit('setUserInfo', { firstName: res.data.firstName });
                 userStore.commit('setSecretKey', await decryptPSK(res.data.IV, MK, res.data.PSK));
+
                 console.debug('[LOGIN] Decrypted PSK, saved SecretKey in userStore');
 
                 return {
                     ok: true,
+                    data: {
+                        code: WEB_CODES.LOGIN_SUCCESS,
+                        message: '[LOGIN] Login procedure successful',
+                    },
                 };
             });
         })
         .catch((err: Error) => {
             console.debug('[LOGIN] Caught error:');
             console.dir(err);
+
+            userStore.commit('logout');
 
             return {
                 ok: false,

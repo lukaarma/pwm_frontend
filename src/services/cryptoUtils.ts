@@ -1,7 +1,13 @@
-// Email, Master Password => crypto.subtle.deriveKey => Master Key
-// Master Password, Master Key => crypto.subtle.deriveBits => Master Password Hash
+import base64 from 'base64-js';
+
+import { vaultStore } from '@/stores/vaultStore';
+import { userStore } from '@/stores/userStore';
+import type { VaultBody } from '@/types';
+
+// TODO: better error handling
 
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 export async function deriveMKeMPH(email: string, password: string) {
     // transform string to Uint8Array
@@ -91,7 +97,70 @@ export async function encryptSK(IV: Uint8Array, masterKey: CryptoKey, SKArray: U
     );
 }
 
+export async function decryptVault(encryptedVault: VaultBody): Promise<boolean> {
+    vaultStore.commit('setVault', {
+        version: encryptedVault.version,
+        lastModified: encryptedVault.lastModified,
+        IV: fromHex(encryptedVault.IV),
+    });
 
+    if (userStore.state.secretKey) {
+        const decryptedData: ArrayBuffer = await window.crypto.subtle
+            .decrypt(
+                {
+                    name: 'AES-CBC',
+                    iv: vaultStore.state.IV,
+                },
+                userStore.state.secretKey,
+                base64.toByteArray(encryptedVault.data)
+            )
+            .catch((err) => console.error(err));
+
+        try {
+            vaultStore.commit('setVault', {
+                data: JSON.parse(decoder.decode(decryptedData)),
+            });
+
+            return true;
+        } catch (error) {
+            console.debug('[DECRYPT_VAULT] Error while decrypting JSON data!');
+
+            return false;
+        }
+    } else {
+        console.debug('[DECRYPT_VAULT] No Symmetric Key present!');
+
+        return false;
+    }
+}
+
+export async function encryptVault(): Promise<VaultBody | null> {
+    if (userStore.state.secretKey) {
+        const encrypted: ArrayBuffer = await window.crypto.subtle
+            .encrypt(
+                {
+                    name: 'AES-CBC',
+                    iv: vaultStore.state.IV,
+                },
+                userStore.state.secretKey,
+                encoder.encode(JSON.stringify(vaultStore.state.data))
+            )
+            .catch((err) => {
+                console.debug(err);
+            });
+
+        return {
+            version: vaultStore.state.version,
+            lastModified: vaultStore.state.lastModified,
+            IV: toHex(vaultStore.state.IV),
+            data: base64.fromByteArray(new Uint8Array(encrypted)),
+        };
+    } else {
+        console.debug('[ENCRYPT_VAULT] No Symmetric Key present!');
+
+        return null;
+    }
+}
 
 function fromHex(hexString: string) {
     const match = hexString.match(/.{1,2}/g);

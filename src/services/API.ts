@@ -1,14 +1,23 @@
 import axios, { AxiosError } from 'axios';
+import { userStore } from '@/stores/userStore';
 
-import type { LoginBody, LoginResponse, SignupBody, APIResponse, WebMessage } from '@/types';
+import type {
+    LoginBody,
+    LoginResponse,
+    SignupBody,
+    UserInfo,
+    VaultResponse,
+    APIResponse,
+    WebMessage,
+    VaultBody,
+} from '@/types';
 
 const API = axios.create({ baseURL: 'https://dev.lukaarma.dynu.net/api' });
 
-// FIXME: move header in vuex store
 async function login(user: LoginBody): Promise<APIResponse<LoginResponse>> {
     return API.post('/user/login', user)
         .then((res) => {
-            API.defaults.headers.common.authorization = res.headers.authorization;
+            userStore.commit('setAuthHeader', res.headers.authorization);
 
             return {
                 data: res.data as LoginResponse,
@@ -61,8 +70,71 @@ async function sendVerification(email: string): Promise<APIResponse> {
         });
 }
 
+async function getUserInfo(): Promise<APIResponse<UserInfo>> {
+    return API.get('/user/profile', { headers: { Authorization: userStore.state.authHeader } })
+        .then((res) => {
+            return {
+                data: res.data as UserInfo,
+            };
+        })
+        .catch((err: Error | AxiosError) => {
+            if (axios.isAxiosError(err)) {
+                return {
+                    err: err.response?.data as WebMessage,
+                };
+            } else {
+                throw err;
+            }
+        });
+}
+
+async function getVault(): Promise<APIResponse<VaultResponse>> {
+    return API.get('/vault', { headers: { Authorization: userStore.state.authHeader } })
+        .then((res) => {
+            return {
+                data: res.data as VaultResponse,
+            };
+        })
+        .catch((err: Error | AxiosError) => {
+            if (axios.isAxiosError(err)) {
+                return {
+                    err: err.response?.data as WebMessage,
+                };
+            } else {
+                throw err;
+            }
+        });
+}
+
+async function sendVault(vault: VaultBody, createNew = false): Promise<APIResponse> {
+    return API.request({
+        method: createNew ? 'post' : 'put',
+        url: '/vault',
+        data: vault,
+        headers: {
+            Authorization: userStore.state.authHeader,
+        },
+    })
+        .then((res) => {
+            return {
+                data: res.data,
+            };
+        })
+        .catch((err: Error | AxiosError) => {
+            if (axios.isAxiosError(err)) {
+                return {
+                    err: err.response?.data as WebMessage,
+                };
+            } else {
+                throw err;
+            }
+        });
+}
+
 export default {
     login,
     signup,
     sendVerification,
+    sendVault,
+    getVault,
 };
