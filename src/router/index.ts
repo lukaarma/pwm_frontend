@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
+
+import { userStore } from '@/stores/userStore';
 import HomeView from '@/views/HomeView.vue';
 
 const router = createRouter({
@@ -31,6 +33,14 @@ const router = createRouter({
             path: '/vault',
             name: 'Vault',
             component: () => import('@/views/VaultView.vue'),
+            beforeEnter: () => {
+                if (userStore.state.authHeader) {
+                    return true;
+                }
+                console.debug('[ROUTER] User not authenticated, access not granted to Vault');
+
+                return '/login';
+            },
         },
     ],
 });
