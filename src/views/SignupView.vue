@@ -3,7 +3,7 @@
         <LogoExtended class="formLogo mb-8" />
 
         <p class="text-center">SIGNUP</p>
-        <ErrorAlert class="mb-4" :show="signupFailed" :msg="signupFailedMsg" />
+        <Toast class="mb-4" type="error" :show="signupFailed" :msg="signupFailedMsg" />
 
         <v-text-field
             v-model="user.email"
@@ -77,7 +77,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type vuetify from 'vuetify/components';
 
-import ErrorAlert from '@/components/ErrorAlert.vue';
+import Toast from '@/components/ToastComponent.vue';
 import LogoExtended from '@/components/LogoExtended.vue';
 import doSignup from '@/services/signup';
 

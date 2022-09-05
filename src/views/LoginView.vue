@@ -2,7 +2,7 @@
     <v-form ref="form" @submit.prevent="login" class="centerForm mt-8 px-8">
         <LogoExtended class="formLogo mb-8" />
 
-        <ErrorAlert class="mb-4" :show="loginFailed" :msg="loginFailedMsg" />
+        <Toast class="mb-4" type="error" :show="loginFailed" :msg="loginFailedMsg" />
 
         <v-text-field
             v-model="user.email"
@@ -41,7 +41,7 @@ import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 import { mdiAccountBox, mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 
-import ErrorAlert from '@/components/ErrorAlert.vue';
+import Toast from '@/components/ToastComponent.vue';
 import LogoExtended from '@/components/LogoExtended.vue';
 import router from '@/router';
 import doLogin from '@/services/login';
