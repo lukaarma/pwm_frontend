@@ -3,8 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { userStore } from '@/stores/userStore';
 import HomeView from '@/views/HomeView.vue';
 
+const whitelist = ['/', '/login', '/signup', '/sendVerification'];
+
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
+
     routes: [
         {
             path: '/',
@@ -25,24 +28,30 @@ const router = createRouter({
             component: () => import('@/views/SignupView.vue'),
         },
         {
-            path: '/sendVerification/',
+            path: '/sendVerification',
             name: 'SendVerification',
             component: () => import('@/views/SendVerificationView.vue'),
+        },
+        {
+            path: '/profile',
+            name: 'Profile',
+            component: () => import('@/views/ProfileView.vue'),
         },
         {
             path: '/vault',
             name: 'Vault',
             component: () => import('@/views/VaultView.vue'),
-            beforeEnter: () => {
-                if (userStore.state.authHeader) {
-                    return true;
-                }
-                console.debug('[ROUTER] User not authenticated, access not granted to Vault');
-
-                return '/login';
-            },
         },
     ],
+});
+
+router.beforeEach((to) => {
+    if (whitelist.includes(to.path) || userStore.state.authHeader) {
+        return true;
+    }
+    console.debug(`[ROUTER] User not authenticated, navigation to '${to.path}' blocked`);
+
+    return '/login';
 });
 
 export default router;
