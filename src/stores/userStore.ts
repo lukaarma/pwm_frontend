@@ -7,6 +7,7 @@ import type { UserInfo } from '@/types';
 type UserStore = UserInfo & {
     secretKey: CryptoKey | null;
     authHeader: string;
+    userInitials: string;
 };
 
 // define injection key
@@ -20,12 +21,15 @@ export const userStore = createStore<UserStore>({
         lastName: '',
         secretKey: null,
         authHeader: '',
+        userInitials: '',
     },
     mutations: {
         setUserInfo(state, newUserInfo: Partial<UserInfo>) {
-            state.firstName = newUserInfo.firstName ?? state.firstName;
-            state.lastName = newUserInfo.lastName ?? state.lastName;
-            state.email = newUserInfo.email ?? state.email;
+            state.firstName = newUserInfo.firstName?.trim() ?? state.firstName;
+            state.lastName = newUserInfo.lastName?.trim() ?? state.lastName;
+            state.email = newUserInfo.email?.trim() ?? state.email;
+
+            state.userInitials = state.firstName[0].toUpperCase() + state.lastName[0].toUpperCase();
         },
         setSecretKey(state, newSecretKey: CryptoKey) {
             state.secretKey = newSecretKey;

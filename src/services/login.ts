@@ -29,7 +29,12 @@ export default async function (email: string, password: string): Promise<Result>
 
                 console.debug('[LOGIN] API call success, got name, PSK and IV. Now decrypting...');
 
-                userStore.commit('setUserInfo', { firstName: res.data.firstName });
+                userStore.commit('setUserInfo', {
+                    firstName: res.data.firstName,
+                    lastName: res.data.lastName,
+                    email: res.data.email,
+                });
+
                 userStore.commit('setSecretKey', await decryptPSK(res.data.IV, MK, res.data.PSK));
 
                 console.debug('[LOGIN] Decrypted PSK, saved SecretKey in userStore');

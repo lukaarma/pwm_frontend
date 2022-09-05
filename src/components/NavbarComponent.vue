@@ -1,25 +1,23 @@
+<!-- TODO: when logged in show only vault and profile, if click on profile show setting and logout -->
 <template>
     <v-app-bar app floating elevation="1" height="60">
-        <v-app-bar-nav-icon class="ml-5">
-            <router-link to="/">
-                <v-img src="/assets/logo.svg" height="45px" width="45px" />
-            </router-link>
-        </v-app-bar-nav-icon>
+        <v-toolbar-items>
+            <v-btn to="/">
+                <!-- TODO: is there a way to auto width respecting aspect ratio? -->
+                <v-img src="/assets/logo.svg" class="fillHeight" width="80" />
+            </v-btn>
+        </v-toolbar-items>
 
         <v-spacer />
 
-        <template v-if="userStore.state.firstName">
-            <span> {{ userStore.state.firstName || 'empty' }} </span>
-            <v-spacer />
-        </template>
-
         <v-toolbar-items>
             <v-divider vertical></v-divider>
-            <v-btn size="x-large" @click="$emit('toggleDarkMode')">
+            <v-btn @click="$emit('toggleDarkMode')" class="navbarIcon">
                 <v-icon
                     class="toggleDarkMode"
                     :class="{ rotate: !darkMode }"
                     :icon="darkMode ? mdiWeatherNight : mdiBrightness6"
+                    size="x-large"
                 />
                 <v-tooltip activator="parent" location="bottom" class="white-text">
                     Switch to
@@ -29,27 +27,34 @@
             </v-btn>
 
             <v-divider vertical />
-            <template v-if="userStore.state.firstName">
-                <v-btn to="/vault" :elevation="$route.path === '/vault' ? '10' : '0'">
-                    Vault
-                </v-btn>
+
+            <template v-if="userStore.state.authHeader">
+                <v-btn class="navbarButton" to="/vault"> Vault </v-btn>
                 <v-divider vertical />
-                <v-btn @click="logout"> Logout </v-btn>
+                <ProfileMenu />
             </template>
-            <template v-else>
-                <v-btn to="/login" :elevation="$route.path === '/login' ? '10' : '0'">
+
+            <v-btn-toggle
+                v-else
+                v-model="selectedButton"
+                divided
+                rounded="0"
+                class="forceFullHeight"
+            >
+                <v-btn class="navbarButton" to="/login" :elevation="$route.path === '/login' ? '10' : '0'">
                     Login
                 </v-btn>
                 <v-divider vertical />
-                <v-btn to="/signup" :elevation="$route.path === '/signup' ? '10' : '0'">
+                <v-btn class="navbarButton" to="/signup" :elevation="$route.path === '/signup' ? '10' : '0'">
                     Signup
                 </v-btn>
-            </template>
+            </v-btn-toggle>
         </v-toolbar-items>
     </v-app-bar>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use '@/styles.scss';
 .toggleDarkMode {
     transition: transform 0.3s ease-in-out !important;
 }
@@ -57,19 +62,34 @@
 .toggleDarkMode.rotate {
     transform: rotate(180deg);
 }
+
+.fillHeight {
+    height: 100%;
+}
+
 </style>
 
 <script setup lang="ts">
 import { mdiBrightness6, mdiWeatherNight } from '@mdi/js';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
-import router from '@/router';
+import ProfileMenu from '@/components/ProfileMenuComponent.vue';
 import { userStore } from '@/stores/userStore';
 
 defineProps<{ darkMode: boolean }>();
 defineEmits<{ (e: 'toggleDarkMode'): void }>();
 
-function logout() {
-    userStore.commit('logout');
-    router.push('/login');
-}
+const route = useRoute();
+
+const selectedButton = computed(() => {
+    switch (route.path) {
+        case '/login':
+            return 0;
+        case '/signup':
+            return 1;
+        default:
+            return null;
+    }
+});
 </script>
