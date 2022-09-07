@@ -3,7 +3,13 @@
         <LogoExtended class="formLogo mb-8" />
 
         <p class="text-center">SIGNUP</p>
-        <Toast class="mb-4" type="error" :show="signupFailed" :msg="signupFailedMsg" />
+        <Toast
+            class="mb-4"
+            type="error"
+            :show="showToast"
+            :msg="toastMsg"
+            @close="showToast = false"
+        />
 
         <v-text-field
             v-model="user.email"
@@ -40,7 +46,7 @@
             v-model="user.firstName"
             label="First Name"
             type="text"
-            :rules="nameRules"
+            :rules="firstNameRules"
             :prepend-inner-icon="mdiAccountBox"
             required
         />
@@ -49,7 +55,7 @@
             v-model="user.lastName"
             label="Last Name"
             type="text"
-            :rules="nameRules"
+            :rules="lastNameRules"
             :prepend-inner-icon="mdiAccountBox"
             required
         />
@@ -91,15 +97,16 @@ const user = ref({
 
 const loading = ref(false);
 const hidePassword = ref(true);
-const signupFailed = ref(false);
-const signupFailedMsg = ref('');
+const showToast = ref(false);
+const toastMsg = ref('');
 
 const router = useRouter();
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
+const nameRegex = /^[\p{L}][ \p{L}'-]*[\p{L}]$/u;
 
 const emailRules = [
     (email: string) => !!email || 'E-mail is required',
-    (email: string) => /^.+@.+\..+$/.test(email) || 'E-mail must be valid',
+    (email: string) => /^.+@.+\..+$/.test(email.trim()) || 'E-mail must be valid',
 ];
 
 const passwordRules = [
@@ -117,14 +124,24 @@ const repeatPasswordRules = [
     (psw: string) => psw === user.value.password || "The passwords don't match!",
 ];
 
-const nameRules = [(name: string) => !!name || 'Name is required'];
+const firstNameRules = [
+    (firstName: string) => !!firstName || 'First name is required',
+    (firstName: string) =>
+        !!nameRegex.test(firstName.trim()) || 'First name contain an invalid character!',
+];
+
+const lastNameRules = [
+    (lastName: string) => !!lastName || 'Name is required',
+    (lastName: string) =>
+        !!nameRegex.test(lastName.trim()) || 'Last name contain an invalid character!',
+];
 
 async function resetForm() {
     form.value?.reset();
 }
 
 async function signup(): Promise<void> {
-    signupFailed.value = false;
+    showToast.value = false;
     loading.value = true;
     console.debug('[SignupView] Signup start');
 
@@ -136,8 +153,8 @@ async function signup(): Promise<void> {
             goVerification(true);
         } else {
             console.debug(`[SignupView] Signup failed:  [${res.err.code}] ${res.err.message}`);
-            signupFailed.value = true;
-            signupFailedMsg.value = res.err.message;
+            showToast.value = true;
+            toastMsg.value = res.err.message;
             loading.value = false;
         }
     }

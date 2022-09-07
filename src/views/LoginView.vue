@@ -2,15 +2,19 @@
     <v-form ref="form" @submit.prevent="login" class="centerForm mt-8 px-8">
         <LogoExtended class="formLogo mb-8" />
 
-        <Toast class="mb-4" type="error" :show="loginFailed" :msg="loginFailedMsg" />
-
+        <Toast
+            class="mb-4"
+            type="error"
+            :show="showToast"
+            :msg="toastMsg"
+            @close="showToast = false"
+        />
         <v-text-field
             v-model="user.email"
             :rules="emailRules"
             :prepend-inner-icon="mdiAccountBox"
             label="Email"
             required
-            @input="loginFailed = false"
         />
 
         <v-text-field
@@ -22,7 +26,6 @@
             label="Password"
             required
             @click:appendInner="hidePassword = !hidePassword"
-            @input="loginFailed = false"
         />
 
         <div class="text-right">
@@ -37,18 +40,18 @@
 </style>
 
 <script setup lang="ts">
+import { mdiAccountBox, mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
-import { mdiAccountBox, mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 
-import Toast from '@/components/ToastComponent.vue';
 import LogoExtended from '@/components/LogoExtended.vue';
+import Toast from '@/components/ToastComponent.vue';
 import router from '@/router';
 import doLogin from '@/services/login';
 
 const loading = ref(false);
-const loginFailed = ref(false);
-const loginFailedMsg = ref('');
+const showToast = ref(false);
+const toastMsg = ref('');
 const hidePassword = ref(true);
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
 
@@ -56,7 +59,6 @@ const emailRules = [
     (email: string) => !!email || 'E-mail is required',
     (email: string) => /^.+@.+\..+$/.test(email) || 'E-mail must be valid',
 ];
-
 const passwordRules = [(psw: string) => !!psw || 'Password is required'];
 
 // INPUTS VALUE REF
@@ -66,26 +68,25 @@ const user = ref({
 });
 
 async function login() {
-    loginFailed.value = false;
-
     if ((await form.value?.validate())?.valid) {
         loading.value = true;
         const res = await doLogin(user.value.email, user.value.password);
         if (res.ok) {
+            showToast.value = false;
             loading.value = false;
             router.push('/vault');
         } else {
             console.debug(`[LoginView] Login failed:  [${res.err.code}] ${res.err.message}`);
             loading.value = false;
-            loginFailed.value = true;
-            loginFailedMsg.value = res.err.message;
+            showToast.value = true;
+            toastMsg.value = res.err.message;
         }
     }
 }
 
 function resetForm() {
     form.value?.reset();
-    loginFailed.value = false;
+    showToast.value = false;
     loading.value = false;
 }
 </script>
