@@ -1,4 +1,3 @@
-<!-- TODO: when logged in show only vault and profile, if click on profile show setting and logout -->
 <template>
     <v-app-bar app floating elevation="1" height="60">
         <v-toolbar-items>

@@ -9,28 +9,71 @@
             </v-btn>
         </template>
         <v-card>
-            <v-card-text class="mx-auto text-center">
+            <v-card-text class="profileMenu">
                 <v-avatar color="primary">
                     <span class="white--text text-h6"> {{ userStore.state.userInitials }} </span>
                 </v-avatar>
-                <h2 class="mt-2">{{ userStore.state.firstName }} {{ userStore.state.lastName }}</h2>
-                <p class="text-caption mt-2">{{ userStore.state.email }}</p>
-                <v-btn to="/profile" variant="text" block class="mt-2 py-2"> Edit profile </v-btn>
-                <v-btn @click="logout" variant="outlined" block color="error" class="mt-2 py-2">
-                    Logout
-                </v-btn>
+                <v-card-title>
+                    <h3 ref="firstNameEl" class="text-truncate">
+                        {{ userStore.state.firstName }}
+                        {{ firstNameOverflow ? '' : userStore.state.lastName }}
+                    </h3>
+                    <h3 v-if="firstNameOverflow" class="text-truncate">
+                        {{ userStore.state.lastName }}
+                    </h3>
+                </v-card-title>
+
+                <p class="text-caption">{{ userStore.state.email }}</p>
+
+                <v-btn to="/profile" variant="outlined" block class="mt-4 py-2"> Settings </v-btn>
+                <!-- TODO: add color change on hover -->
+                <!-- <v-hover v-slot="{ isHovering, props }">
+                    <v-btn
+                        @click="logout(isHovering)"
+                        :variant="isHovering ? 'elevated' : 'outlined'"
+                        block
+                        color="error"
+                        class="mt-2 py-2 alwaysBorder"
+                        :class="isHovering ? 'bg-error' : ''"
+                        v-bind="props"
+                    >
+                        Logout
+                    </v-btn>
+                </v-hover> -->
+                <v-btn @click="logout" block color="error" class="mt-2 py-2"> Logout </v-btn>
             </v-card-text>
         </v-card>
     </v-menu>
 </template>
 
+<style lang="scss">
+@use '@/styles.scss';
+
+// .alwaysBorder {
+//     border: thin solid currentColor !important;
+//     box-shadow: none !important;
+// }
+
+.profileMenu {
+    margin: 0 auto;
+    text-align: center;
+    max-width: 400px;
+}
+</style>
+
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useUserStore } from '@/stores/userStore';
 
 const router = useRouter();
 const userStore = useUserStore();
+
+const firstNameEl = ref<HTMLHeadingElement | null>(null);
+const firstNameOverflow = computed(
+    () => (firstNameEl.value?.scrollWidth ?? 0) > (firstNameEl.value?.clientWidth ?? 0)
+);
 
 function logout() {
     userStore.commit('logout');

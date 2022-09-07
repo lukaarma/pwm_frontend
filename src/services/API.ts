@@ -6,10 +6,11 @@ import type {
     LoginResponse,
     SignupBody,
     UserInfo,
+    UpdateProfileBody,
+    VaultBody,
     VaultResponse,
     APIResponse,
     WebMessage,
-    VaultBody,
 } from '@/types';
 
 const API = axios.create({ baseURL: 'https://dev.lukaarma.dynu.net/api' });
@@ -88,6 +89,26 @@ async function getUserInfo(): Promise<APIResponse<UserInfo>> {
         });
 }
 
+async function updateUserInfo(profile: UpdateProfileBody): Promise<APIResponse<UserInfo>> {
+    return API.put('/user/profile', profile, {
+        headers: { Authorization: userStore.state.authHeader },
+    })
+        .then((res) => {
+            return {
+                data: res.data as UserInfo,
+            };
+        })
+        .catch((err: Error | AxiosError) => {
+            if (axios.isAxiosError(err)) {
+                return {
+                    err: err.response?.data as WebMessage,
+                };
+            } else {
+                throw err;
+            }
+        });
+}
+
 async function getVault(): Promise<APIResponse<VaultResponse>> {
     return API.get('/vault', { headers: { Authorization: userStore.state.authHeader } })
         .then((res) => {
@@ -137,4 +158,6 @@ export default {
     sendVerification,
     sendVault,
     getVault,
+    getUserInfo,
+    updateUserInfo
 };
