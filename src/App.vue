@@ -2,7 +2,10 @@
     <v-app :theme="darkMode ? 'dark' : 'light'">
         <v-main>
             <Navbar :darkMode="darkMode" @toggleDarkMode="darkMode = !darkMode" />
-            <router-view class="mb-4" />
+            <!-- NOTE: Suspense needed for async Single Page Components -->
+            <Suspense>
+                <router-view class="mb-4" />
+            </Suspense>
             <Footer />
         </v-main>
     </v-app>
