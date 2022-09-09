@@ -10,18 +10,14 @@
         <v-card-text>
             <v-window v-model="tab">
                 <v-window-item value="Vault">
-                    <VaultComponent />
+                    <Vault />
                 </v-window-item>
 
-                <v-window-item value="Tools">
+                <v-window-item value="Tools"> </v-window-item>
 
-                </v-window-item>
+                <v-window-item value="Export"> </v-window-item>
 
-                <v-window-item value="Export">
-                </v-window-item>
-
-                <v-window-item value="Import">
-                </v-window-item>
+                <v-window-item value="Import"> </v-window-item>
             </v-window>
         </v-card-text>
     </v-card>
@@ -29,7 +25,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import VaultComponent from '@/components/VaultComponent.vue';
+import Vault from '@/components/VaultComponent.vue';
+import { getVault } from '@/services/vault';
 
-const tab = ref("Vault");
+const tab = ref('');
+
+getVault().catch((err) => {
+    console.error(err);
+});
 </script>

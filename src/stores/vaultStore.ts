@@ -3,22 +3,50 @@ import { createStore, useStore as baseUseStore, Store } from 'vuex';
 
 // define your typings for the store state
 
-type VaultItem = {
-    websiteName: string;
+type Credential = {
+    name: string;
     url: string;
     username: string;
     password: string;
+};
+
+type MInsertCredential = {
+    index: number;
+    credential: Credential;
+};
+
+type MUpdateCredential = {
+    index: number;
+    newIndex?: number;
+    credential: Credential;
+};
+
+type CredentialUpdateAction = {
+    index: number;
+    credential: Credential;
 };
 
 export type VaultStore = {
     version: number;
     lastModified: Date;
     IV: Uint8Array;
-    data: Array<VaultItem>;
+    credentials: Array<Credential>;
 };
 
 // define injection key
 export const vaultKey: InjectionKey<Store<VaultStore>> = Symbol();
+
+// mutations/actions names
+export const VAULT_M = {
+    INSERT_CREDENTIAL: 'insertCredential',
+    UPDATE_CREDENTIAL: 'updateCredential',
+    SET_VAULT: 'setVault',
+    LOGOUT: 'logout',
+};
+
+export const VAULT_A = {
+    SET_CREDENTIAL: 'setCredential',
+};
 
 // Create a new store instance.
 export const vaultStore = createStore<VaultStore>({
@@ -26,20 +54,87 @@ export const vaultStore = createStore<VaultStore>({
         version: 0,
         lastModified: new Date(),
         IV: new Uint8Array(),
-        data: [],
+        credentials: [],
     },
     mutations: {
+        insertCredential(state, insert: MInsertCredential) {
+            state.credentials.splice(insert.index, 0, insert.credential);
+
+            state.version++;
+            state.lastModified = new Date();
+            window.crypto.getRandomValues(state.IV);
+        },
+        updateCredential(state, update: MUpdateCredential) {
+            if (update.newIndex) {
+                // delete at current index
+                state.credentials.splice(update.index, 1);
+                // insert at new index
+                state.credentials.splice(update.newIndex, 0, update.credential);
+            } else {
+                state.credentials[update.index] = update.credential;
+            }
+
+            state.version++;
+            state.lastModified = new Date();
+            window.crypto.getRandomValues(state.IV);
+        },
         setVault(state, newVault: Partial<VaultStore>) {
             state.version = newVault.version ?? state.version;
             state.lastModified = newVault.lastModified ?? state.lastModified;
             state.IV = newVault.IV ?? state.IV;
-            state.data = newVault.data ?? state.data;
+            state.credentials = newVault.credentials ?? state.credentials;
+
+            state.credentials.sort((a, b) => a.name.localeCompare(b.name));
         },
         logout(state) {
             state.version = 0;
             state.lastModified = new Date();
             state.IV = new Uint8Array();
-            state.data = [];
+            state.credentials = [];
+        },
+    },
+    actions: {
+        setCredential({ state, commit }, update: CredentialUpdateAction): number {
+            let newIndex = undefined;
+
+            console.debug(`[VAULT_STORE] Requested update for index ${update.index}`);
+
+            // if new credential or name updated we find the new index
+            if (
+                update.index === -1 ||
+                update.credential.name !== state.credentials[update.index].name
+            ) {
+                for (
+                    newIndex = 0;
+                    newIndex < state.credentials.length &&
+                    state.credentials[newIndex].name.localeCompare(update.credential.name) < 0;
+                    newIndex++
+                );
+            }
+
+            // if new insert, else update
+            if (update.index === -1) {
+                console.debug(`[VAULT_STORE] Inserting credential at ${newIndex}`);
+
+                commit(VAULT_M.INSERT_CREDENTIAL, {
+                    index: newIndex,
+                    // NOTE: must use deep copy to disconnect ref in dialog from credential in vault
+                    credential: { ...update.credential },
+                });
+            } else {
+                console.debug(
+                    `[VAULT_STORE] Updating credential at ${update.index} to ${newIndex}`
+                );
+
+                commit(VAULT_M.UPDATE_CREDENTIAL, {
+                    index: update.index,
+                    newIndex,
+                    // NOTE: must use deep copy to disconnect ref in dialog from credential in vault
+                    credential: { ...update.credential },
+                });
+            }
+
+            return newIndex ?? update.index;
         },
     },
 });

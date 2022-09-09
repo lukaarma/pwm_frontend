@@ -66,9 +66,11 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useUserStore } from '@/stores/userStore';
+import { VAULT_M, useVaultStore } from '@/stores/vaultStore';
 
 const router = useRouter();
 const userStore = useUserStore();
+const vaultStore = useVaultStore();
 
 const firstNameEl = ref<HTMLHeadingElement | null>(null);
 const firstNameOverflow = computed(
@@ -77,6 +79,7 @@ const firstNameOverflow = computed(
 
 function logout() {
     userStore.commit('logout');
+    vaultStore.commit(VAULT_M.LOGOUT);
     router.push('/login');
 }
 </script>

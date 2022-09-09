@@ -1,6 +1,6 @@
 import base64 from 'base64-js';
 
-import { vaultStore } from '@/stores/vaultStore';
+import { VAULT_M, vaultStore } from '@/stores/vaultStore';
 import { userStore } from '@/stores/userStore';
 import type { VaultBody } from '@/types';
 
@@ -98,7 +98,7 @@ export async function encryptSK(IV: Uint8Array, masterKey: CryptoKey, SKArray: U
 }
 
 export async function decryptVault(encryptedVault: VaultBody): Promise<boolean> {
-    vaultStore.commit('setVault', {
+    vaultStore.commit(VAULT_M.SET_VAULT, {
         version: encryptedVault.version,
         lastModified: encryptedVault.lastModified,
         IV: fromHex(encryptedVault.IV),
@@ -114,11 +114,15 @@ export async function decryptVault(encryptedVault: VaultBody): Promise<boolean> 
                 userStore.state.secretKey,
                 base64.toByteArray(encryptedVault.data)
             )
-            .catch((err) => console.error(err));
+            .catch((err) => {
+                console.error(err);
+
+                return new Uint8Array(0);
+            });
 
         try {
-            vaultStore.commit('setVault', {
-                data: JSON.parse(decoder.decode(decryptedData)),
+            vaultStore.commit(VAULT_M.SET_VAULT, {
+                credentials: JSON.parse(decoder.decode(decryptedData)),
             });
 
             return true;
@@ -143,10 +147,12 @@ export async function encryptVault(): Promise<VaultBody | null> {
                     iv: vaultStore.state.IV,
                 },
                 userStore.state.secretKey,
-                encoder.encode(JSON.stringify(vaultStore.state.data))
+                encoder.encode(JSON.stringify(vaultStore.state.credentials))
             )
             .catch((err) => {
-                console.debug(err);
+                console.error(err);
+
+                return new Uint8Array(0);
             });
 
         return {

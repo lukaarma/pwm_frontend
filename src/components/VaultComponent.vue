@@ -8,7 +8,7 @@
         </v-btn>
     </div>
 
-    <div v-for="(_, key) of vaultStore.state.data" :key="key">
+    <div v-for="(_, key) of vaultStore.state.credentials" :key="key">
         <Credential :index="key" @openDialog="openDialog" />
     </div>
 
@@ -17,24 +17,19 @@
 
 <script setup lang="ts">
 import { useVaultStore } from '@/stores/vaultStore';
-import { getVault } from '@/services/vault';
 import { ref } from 'vue';
 
 import Credential from '@/components/CredentialComponent.vue';
 import CredentialDialog from '@/components/CredentialDialog.vue';
-
-getVault().catch((err) => {
-    console.error(err);
-});
 
 const vaultStore = useVaultStore();
 const showDialog = ref(false);
 const showIndex = ref(-1);
 
 function openDialog(i: number) {
+    console.debug(`[VAULT] Opening dialog with index ${showIndex.value}`);
     showIndex.value = i;
     showDialog.value = true;
-    console.log(showIndex.value);
 }
 
 function closeDialog() {

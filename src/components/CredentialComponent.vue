@@ -1,9 +1,7 @@
 <template>
     <v-card color="purple ma-2" theme="dark">
         <v-row class="ma-2">
-            <v-card-title class="text-h5">
-                {{ credential.websiteName }}
-            </v-card-title>
+            <v-card-title class="text-h5"> {{ credential.name }} | {{ props.index }} </v-card-title>
             <v-btn text color="primary" @click="$emit('openDialog', index)">Edit</v-btn>
         </v-row>
         <v-card-subtitle>{{ credential.username }}</v-card-subtitle>
@@ -12,7 +10,7 @@
 
 <script setup lang="ts">
 import { useVaultStore } from '@/stores/vaultStore';
-import { readonly } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps<{
     index: number;
@@ -24,5 +22,5 @@ defineEmits<{
 
 const vaultStore = useVaultStore();
 
-const credential = readonly(vaultStore.state.data[props.index]);
+const credential = computed(() => vaultStore.state.credentials[props.index]);
 </script>

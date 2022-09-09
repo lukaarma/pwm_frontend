@@ -1,11 +1,8 @@
 import API from './API';
-import utils, { encryptVault, decryptVault } from './cryptoUtils';
-import { userStore } from '@/stores/userStore';
-import { vaultStore, type VaultStore } from '@/stores/vaultStore';
-import type { APIResponse, Result, VaultBody, VaultResponse } from '@/types';
+import { encryptVault, decryptVault } from './cryptoUtils';
+import { VAULT_M, vaultStore, type VaultStore } from '@/stores/vaultStore';
+import type { Result, VaultBody } from '@/types';
 import { WEB_CODES } from '@/types';
-
-const encoder = new TextEncoder();
 
 // TODO: if vault in local storage send to backend
 export async function getVault(): Promise<Result> {
@@ -81,7 +78,7 @@ export async function getVault(): Promise<Result> {
 }
 
 // try 3 times, then leave local copy saved
-export async function sendVault(createNew: boolean = false): Promise<Result> {
+export async function sendVault(createNew = false): Promise<Result> {
     const maxTries = 3;
     const sleepTimer = 3000;
 
@@ -149,14 +146,14 @@ export async function sendVault(createNew: boolean = false): Promise<Result> {
 async function initializeVault(): Promise<Result> {
     const vaultIV = window.crypto.getRandomValues(new Uint8Array(16));
 
-    let initialVault: VaultStore = {
+    const initialVault: VaultStore = {
         version: 1,
         lastModified: new Date(),
         IV: vaultIV,
-        data: [],
+        credentials: [],
     };
 
-    vaultStore.commit('setVault', initialVault);
+    vaultStore.commit(VAULT_M.SET_VAULT, initialVault);
     console.debug('[initializeVault] Initialized new vault');
 
     return sendVault(true);
