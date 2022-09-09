@@ -13,7 +13,9 @@
                     <Vault />
                 </v-window-item>
 
-                <v-window-item value="Tools"> </v-window-item>
+                <v-window-item value="Tools">
+                    <Tools />
+                </v-window-item>
 
                 <v-window-item value="Export"> </v-window-item>
 
@@ -26,6 +28,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Vault from '@/components/VaultComponent.vue';
+import Tools from '@/components/ToolsComponent.vue';
 import { getVault } from '@/services/vault';
 
 const tab = ref('');

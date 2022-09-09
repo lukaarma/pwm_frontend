@@ -4,6 +4,7 @@
             <Navbar :darkMode="darkMode" @toggleDarkMode="darkMode = !darkMode" />
             <!-- NOTE: Suspense needed for async Single Page Components -->
             <Suspense>
+                <!-- TODO: move class into child elements -->
                 <router-view class="mb-4" />
             </Suspense>
             <Footer />
