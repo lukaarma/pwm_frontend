@@ -2,13 +2,18 @@
     <v-form ref="form" @submit.prevent="login" class="centerForm mt-8 px-8">
         <LogoExtended class="formLogo mb-8" />
 
-        <Toast
-            class="mb-4"
-            type="error"
-            :show="showToast"
-            :msg="toastMsg"
-            @close="showToast = false"
-        />
+        <div class="formErrorContainer">
+            <Toast
+                class="formError"
+                type="error"
+                :show="showToast"
+                :msg="toastMsg"
+                @close="showToast = false"
+            />
+        </div>
+
+        <h1 class="text-center mb-4 font-weight-light">LOGIN</h1>
+
         <v-text-field
             v-model="user.email"
             :rules="emailRules"
@@ -28,7 +33,7 @@
             @click:appendInner="hidePassword = !hidePassword"
         />
 
-        <div class="text-right">
+        <div class="text-right mb-4">
             <v-btn @click="resetForm" class="mr-4" size="large"> Clear </v-btn>
             <v-btn type="submit" :loading="loading" size="large" color="purple"> Login </v-btn>
         </div>

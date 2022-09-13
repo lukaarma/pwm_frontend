@@ -23,3 +23,12 @@
 .navbarButton {
     width: 100px;
 }
+
+.formErrorContainer {
+    position: relative;
+}
+
+.formError {
+    position: absolute;
+    width: 100%;
+}
