@@ -18,7 +18,12 @@
                     :icon="darkMode ? mdiWeatherNight : mdiBrightness6"
                     size="x-large"
                 />
-                <v-tooltip activator="parent" location="bottom" class="white-text">
+                <v-tooltip
+                    v-if="$vuetify.display.mdAndUp"
+                    activator="parent"
+                    location="bottom"
+                    class="white-text"
+                >
                     Switch to
                     {{ darkMode ? 'light' : 'dark' }}
                     mode
@@ -40,11 +45,19 @@
                 rounded="0"
                 class="forceFullHeight"
             >
-                <v-btn class="navbarButton" to="/login" :elevation="$route.path === '/login' ? '10' : '0'">
+                <v-btn
+                    class="navbarButton"
+                    to="/login"
+                    :elevation="$route.path === '/login' ? '10' : '0'"
+                >
                     Login
                 </v-btn>
                 <v-divider vertical />
-                <v-btn class="navbarButton" to="/signup" :elevation="$route.path === '/signup' ? '10' : '0'">
+                <v-btn
+                    class="navbarButton"
+                    to="/signup"
+                    :elevation="$route.path === '/signup' ? '10' : '0'"
+                >
                     Signup
                 </v-btn>
             </v-btn-toggle>
@@ -65,7 +78,6 @@
 .fillHeight {
     height: 100%;
 }
-
 </style>
 
 <script setup lang="ts">
