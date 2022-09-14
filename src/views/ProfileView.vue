@@ -1,31 +1,16 @@
 <template>
     <v-form ref="form" @submit.prevent="doSubmit" class="centerForm mt-8 px-8">
-        <h1 class="text-center mb-8">User info</h1>
-        <!-- TODO: add modify email feature -->
+        <h1 class="text-center mb-4 font-weight-light">User Info</h1>
 
-        <v-text-field
-            v-model="userInfo.email"
-            label="Email"
-            readonly
-            :color="editMode ? 'primary' : 'default'"
-            :rules="emailRules"
-            :disabled="editMode"
-            :prepend-inner-icon="mdiEmail"
-        />
-
-        <!-- TODO: add modify password feature -->
-
-        <v-text-field
-            v-model="userInfo.password"
-            label="Password"
-            placeholder="**************"
-            type="password"
-            readonly
-            :color="editMode ? 'primary' : 'default'"
-            :disabled="editMode"
-            :prepend-inner-icon="mdiEmail"
-        >
-        </v-text-field>
+        <div class="toastContainer">
+            <Toast
+                class="formMessage"
+                :type="toastType"
+                :show="showToast"
+                :msg="toastMsg"
+                @close="showToast = false"
+            />
+        </div>
 
         <v-text-field
             v-model="userInfo.firstName"
@@ -45,27 +30,43 @@
             :prepend-inner-icon="mdiAccountBox"
         />
 
-        <div v-if="editMode" class="text-right">
+        <div v-if="editMode" class="text-right mb-4">
             <v-btn @click="cancelChanges" class="mr-4" size="large"> Cancel </v-btn>
-            <v-btn type="submit" :loading="loading" size="large" color="purple"> Save </v-btn>
+            <v-btn type="submit" :loading="loading" size="large" color="primary"> Save </v-btn>
         </div>
-        <div v-else class="text-right">
-            <v-btn @click="editMode = true" :loading="loading" size="large" color="purple">
+        <div v-else class="text-right mb-4">
+            <v-btn @click="editMode = true" :loading="loading" size="large" color="primary">
                 Edit
             </v-btn>
         </div>
-        <Toast
-            class="mt-4"
-            :type="toastType"
-            :show="showToast"
-            :msg="toastMsg"
-            @close="showToast = false"
-        />
     </v-form>
+
+    <!-- TODO: add modify password feature -->
+    <!-- <v-text-field
+        v-model="userInfo.password"
+        label="Password"
+        placeholder="**************"
+        type="password"
+        readonly
+        :color="editMode ? 'primary' : 'default'"
+        :disabled="editMode"
+        :prepend-inner-icon="mdiEmail"
+    >
+    </v-text-field> -->
 </template>
 
+<style lang="scss">
+@use '@/styles.scss';
+
+.formMessage {
+    position: absolute;
+    width: 100%;
+    transform: translate(0, -120%);
+}
+</style>
+
 <script setup lang="ts">
-import { mdiEmail, mdiAccountBox } from '@mdi/js';
+import { mdiAccountBox } from '@mdi/js';
 import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
@@ -76,13 +77,7 @@ import Toast from '@/components/ToastComponent.vue';
 
 const userStore = useUserStore();
 
-const userInfo = ref({
-    firstName: userStore.state.firstName,
-    lastName: userStore.state.lastName,
-    email: userStore.state.email,
-    password: '************',
-});
-
+// DOM
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
 const editMode = ref(false);
 const loading = ref(false);
@@ -90,26 +85,32 @@ const showToast = ref(false);
 const toastMsg = ref('');
 const toastType = ref<'success' | 'error' | 'warning' | 'info'>('success');
 
-const emailRules = [
-    (email: string) => !!email || 'E-mail is required',
-    (email: string) => /^.+@.+\..+$/.test(email) || 'E-mail must be valid',
-];
+const userInfo = ref({
+    firstName: userStore.state.firstName,
+    lastName: userStore.state.lastName,
+    email: userStore.state.email,
+    password: '****************',
+});
 
+// rules
 const nameRegex = /^[\p{L}][ \p{L}'-]*[\p{L}]$/u;
-
 const firstNameRules = [
     (firstName: string) => !!firstName || 'First name is required',
     (firstName: string) =>
         !!nameRegex.test(firstName.trim()) || 'First name contain an invalid character!',
 ];
-
 const lastNameRules = [
-    (lastName: string) => !!lastName || 'Name is required',
+    (lastName: string) => !!lastName || 'last Name is required',
     (lastName: string) =>
         !!nameRegex.test(lastName.trim()) || 'Last name contain an invalid character!',
 ];
 
+// timeout
+const timeoutLength = 2000;
+let timeout: number;
+
 async function doSubmit() {
+    clearTimeout(timeout);
     loading.value = true;
 
     const validation = await form.value?.validate();
@@ -132,6 +133,7 @@ async function doSubmit() {
         if (res.ok) {
             toastMsg.value = res.data.message;
             toastType.value = 'success';
+            timeout = setTimeout(() => (showToast.value = false), timeoutLength);
         } else {
             console.error(`[PROFILE VIEW] Api error: [${res.err.code}] '${res.err.message}'`);
             toastMsg.value = res.err.message;
@@ -145,8 +147,8 @@ async function doSubmit() {
         toastType.value = 'error';
     }
 
-    loading.value = false;
     showToast.value = true;
+    loading.value = false;
 }
 
 function cancelChanges() {
@@ -157,9 +159,3 @@ function cancelChanges() {
     showToast.value = false;
 }
 </script>
-
-<style>
-.hasBorder {
-    border: 1px solid red;
-}
-</style>

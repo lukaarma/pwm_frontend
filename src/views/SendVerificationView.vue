@@ -22,7 +22,9 @@
         />
 
         <div class="text-center">
-            <v-btn type="submit" :loading="loading" size="large" color="purple"> Send Email </v-btn>
+            <v-btn type="submit" :loading="loading" size="large" color="primary">
+                Send Email
+            </v-btn>
         </div>
     </v-form>
 </template>

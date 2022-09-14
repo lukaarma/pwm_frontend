@@ -2,7 +2,7 @@
     <v-form ref="form" @submit.prevent="login" class="centerForm mt-8 px-8">
         <LogoExtended class="formLogo mb-8" />
 
-        <div class="formErrorContainer">
+        <div class="toastContainer">
             <Toast
                 class="formError"
                 type="error"
@@ -19,6 +19,7 @@
             :rules="emailRules"
             :prepend-inner-icon="mdiAccountBox"
             label="Email"
+            color="primary"
             required
         />
 
@@ -29,13 +30,14 @@
             :append-inner-icon="hidePassword ? mdiEyeOff : mdiEye"
             :type="hidePassword ? 'password' : 'text'"
             label="Password"
+            color="primary"
             required
             @click:appendInner="hidePassword = !hidePassword"
         />
 
         <div class="text-right mb-4">
-            <v-btn @click="resetForm" class="mr-4" size="large"> Clear </v-btn>
-            <v-btn type="submit" :loading="loading" size="large" color="purple"> Login </v-btn>
+            <v-btn @click="resetForm" class="mr-4" size="large" color="secondary"> Clear </v-btn>
+            <v-btn type="submit" :loading="loading" size="large" color="primary"> Login </v-btn>
         </div>
     </v-form>
 </template>

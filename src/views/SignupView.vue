@@ -2,7 +2,7 @@
     <v-form ref="form" @submit.prevent="signup" class="centerForm mt-8 px-8">
         <LogoExtended class="formLogo mb-8" />
 
-        <div class="formErrorContainer">
+        <div class="toastContainer">
             <Toast
                 class="formError"
                 type="error"
@@ -17,6 +17,7 @@
         <v-text-field
             v-model="user.email"
             label="Email"
+            color="primary"
             :rules="emailRules"
             :prepend-inner-icon="mdiEmail"
             required
@@ -26,6 +27,7 @@
             transition="scale-transition"
             v-model="user.password"
             label="Password"
+            color="primary"
             :type="hidePassword ? 'password' : 'text'"
             :rules="passwordRules"
             :prepend-inner-icon="mdiLock"
@@ -37,6 +39,7 @@
         <v-text-field
             v-model="user.repeatPassword"
             label="Repeat Password"
+            color="primary"
             :type="hidePassword ? 'password' : 'text'"
             :rules="repeatPasswordRules"
             :prepend-inner-icon="mdiLock"
@@ -48,6 +51,7 @@
         <v-text-field
             v-model="user.firstName"
             label="First Name"
+            color="primary"
             type="text"
             :rules="firstNameRules"
             :prepend-inner-icon="mdiAccountBox"
@@ -57,6 +61,7 @@
         <v-text-field
             v-model="user.lastName"
             label="Last Name"
+            color="primary"
             type="text"
             :rules="lastNameRules"
             :prepend-inner-icon="mdiAccountBox"
@@ -65,7 +70,7 @@
 
         <div class="text-right mb-4">
             <v-btn @click="resetForm" class="mr-4" size="large"> Clear </v-btn>
-            <v-btn type="submit" :loading="loading" size="large" color="purple"> Signup </v-btn>
+            <v-btn type="submit" :loading="loading" size="large" color="primary"> Signup </v-btn>
         </div>
 
         <div class="text-center mb-4">

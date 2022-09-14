@@ -1,17 +1,34 @@
 // Styles
-// import '@mdi/font/css/materialdesignicons.css'
-import "vuetify/styles";
+import 'vuetify/styles';
 
 // Vuetify
-import { createVuetify } from "vuetify";
-import { aliases, mdi } from "vuetify/iconsets/mdi-svg";
+import { createVuetify } from 'vuetify';
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 
 const vuetify = createVuetify({
+    display: {
+        mobileBreakpoint: 'sm',
+    },
     theme: {
-        defaultTheme: "dark",
+        defaultTheme: 'dark',
+        themes: {
+            light: {
+                colors: {
+                    primary: '#9c27b0',
+                    secondary: '#FFFFFF',
+                },
+            },
+            dark: {
+                dark: true,
+                colors: {
+                    primary: '#9c27b0',
+                    secondary: '#333333',
+                },
+            },
+        },
     },
     icons: {
-        defaultSet: "mdi",
+        defaultSet: 'mdi',
         aliases,
         sets: {
             mdi,
