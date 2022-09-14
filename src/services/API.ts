@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { userStore } from '@/stores/userStore';
+import { hashCredential } from './cryptoUtils';
 
 import type {
     LoginBody,
@@ -13,6 +14,7 @@ import type {
     WebMessage,
 } from '@/types';
 
+// FIXME: hardcoded API endpoint BAD!!!
 const API = axios.create({ baseURL: 'https://dev.lukaarma.dynu.net/api' });
 
 async function login(user: LoginBody): Promise<APIResponse<LoginResponse>> {
@@ -159,5 +161,20 @@ export default {
     sendVault,
     getVault,
     getUserInfo,
-    updateUserInfo
+    updateUserInfo,
 };
+
+export async function checkPWNEDPassword(password: string): Promise<number> {
+    const hash = (await hashCredential(password)).toUpperCase();
+    const hashMatch = hash.substring(5);
+    console.log(hash);
+
+    const res = await axios
+        .get<string>(`https://api.pwnedpasswords.com/range/${hash.substring(0, 5)}`)
+        .catch(() => {
+            throw new Error('Error while sending request to HaveIBeenPwned services');
+        });
+
+    const match = res.data.split(/\r?\n/).find((line: string) => line.startsWith(hashMatch));
+    return parseInt(match?.split(':')[1] ?? '0');
+}

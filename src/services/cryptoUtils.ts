@@ -168,6 +168,10 @@ export async function encryptVault(): Promise<VaultBody | null> {
     }
 }
 
+export async function hashCredential(credential: string) {
+    return toHex(await crypto.subtle.digest('SHA-1', encoder.encode(credential)));
+}
+
 function fromHex(hexString: string) {
     const match = hexString.match(/.{1,2}/g);
 
