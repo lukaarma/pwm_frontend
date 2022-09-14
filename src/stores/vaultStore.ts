@@ -40,6 +40,7 @@ export const vaultKey: InjectionKey<Store<VaultStore>> = Symbol();
 export const VAULT_M = {
     INSERT_CREDENTIAL: 'insertCredential',
     UPDATE_CREDENTIAL: 'updateCredential',
+    DELETE_CREDENTIAL: 'deleteCredential',
     SET_VAULT: 'setVault',
     LOGOUT: 'logout',
 };
@@ -73,6 +74,13 @@ export const vaultStore = createStore<VaultStore>({
             } else {
                 state.credentials[update.index] = update.credential;
             }
+
+            state.version++;
+            state.lastModified = new Date();
+            window.crypto.getRandomValues(state.IV);
+        },
+        deleteCredential(state, index: number) {
+            state.credentials.splice(index, 1);
 
             state.version++;
             state.lastModified = new Date();
