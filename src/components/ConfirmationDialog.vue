@@ -1,13 +1,11 @@
 <template>
-    <v-row justify="center">
         <v-dialog :model-value="show" persistent>
             <v-card>
                 <v-card-title>
-                    <span class="text-h5">Delete</span>
+                    <span class="text-h5">{{title}}</span>
                 </v-card-title>
                 <v-card-text class="text-center">
-                    <p>Are you sure you want to delete these credentials?</p>
-                    <p>The operation cannot be undone</p>
+                   {{msg}}
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
@@ -16,13 +14,14 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
-    </v-row>
 </template>
 
 <script setup lang="ts">
 // Vue internals
 defineProps<{
     show: boolean;
+    title: string;
+    msg: string;
 }>();
 defineEmits<{
     (e: 'no'): void;

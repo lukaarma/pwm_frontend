@@ -1,81 +1,73 @@
-<!--
-    TODO: understand wtf is going on with the width of this component other than MAGIC
-    TODO: [MOBILE] reduce Y-margin on the form
-    FIXME: form input have too much opacity if focused when readonly, style is confusing
--->
+<!-- FIXME: form input have too much opacity if focused when readonly, style is confusing -->
 <template>
-    <v-dialog :model-value="show" :persistent="editMode" @click:outside="clickOutsideHandler">
+    <v-dialog
+        :model-value="show"
+        :persistent="persistent"
+        @click:outside="close"
+        id="credentialDialog"
+    >
         <v-card>
-            <v-card-title class="mt-4 text-center">
-                <span class="text-h5">{{ title }}</span>
+            <v-card-title class="mt-4 text-center text-h5 font-weight-light">
+                {{ title }}
             </v-card-title>
 
-            <v-card-text class="pa-0">
-                <v-container>
-                    <div class="toastContainer">
-                        <Toast
-                            class="copyAlert"
-                            :type="toastType"
-                            :show="showToast"
-                            :msg="toastMsg"
-                            @close="showToast = false"
-                        />
-                    </div>
-                    <v-form ref="form" @submit.prevent="saveChanges" class="mt-8">
-                        <v-row>
-                            <v-col class="py-0" cols="12">
-                                <v-text-field
-                                    v-model="credential.name"
-                                    :rules="websiteNameRules"
-                                    :prepend-inner-icon="mdiWeb"
-                                    :readonly="!editMode"
-                                    :color="editMode ? 'primary' : 'default'"
-                                    label="Website Name"
-                                    placeholder="Example Website"
-                                    required
-                                />
-                            </v-col>
-                            <v-col class="py-0" cols="12">
-                                <v-text-field
-                                    v-model="credential.username"
-                                    :readonly="!editMode"
-                                    :color="editMode ? 'primary' : 'default'"
-                                    label="Username"
-                                    :prepend-inner-icon="mdiAccountBox"
-                                    @click:prependInner="copyToClipBoard('Username')"
-                                    required
-                                />
-                            </v-col>
-                            <v-col class="py-0" cols="12">
-                                <v-text-field
-                                    v-model="credential.password"
-                                    :readonly="!editMode"
-                                    :color="editMode ? 'primary' : 'default'"
-                                    :prepend-inner-icon="mdiLock"
-                                    :append-inner-icon="hidePassword ? mdiEyeOff : mdiEye"
-                                    :type="hidePassword ? 'password' : 'text'"
-                                    label="Password"
-                                    @click:prependInner="copyToClipBoard('Password')"
-                                    @click:appendInner="hidePassword = !hidePassword"
-                                />
-                            </v-col>
-                            <v-col class="py-0" cols="12">
-                                <v-text-field
-                                    v-model="credential.url"
-                                    :prepend-inner-icon="mdiLinkVariant"
-                                    :readonly="!editMode"
-                                    :color="editMode ? 'primary' : 'default'"
-                                    label="Website URL"
-                                    placeholder="https://exemple.com"
-                                    outlined
-                                    :append-inner-icon="mdiArrowTopRight"
-                                    @click:appendInner="win.open(credential.url, '_blank')"
-                                />
-                            </v-col>
-                        </v-row>
-                        <v-btn type="submit" hidden />
-                    </v-form>
-                </v-container>
+            <v-card-text>
+                <div class="toastContainer">
+                    <Toast
+                        class="copyAlert"
+                        :type="toastType"
+                        :show="showToast"
+                        :msg="toastMsg"
+                        @close="showToast = false"
+                    />
+                </div>
+                <v-form ref="form" @submit.prevent="saveChanges" class="mt-8">
+                    <v-text-field
+                        v-model="credential.name"
+                        :rules="websiteNameRules"
+                        :prepend-inner-icon="mdiWeb"
+                        :readonly="!editMode"
+                        :color="editMode ? 'primary' : 'default'"
+                        label="Website Name"
+                        placeholder="Example Website"
+                        required
+                    />
+
+                    <v-text-field
+                        v-model="credential.username"
+                        :readonly="!editMode"
+                        :color="editMode ? 'primary' : 'default'"
+                        label="Username"
+                        :prepend-inner-icon="mdiAccountBox"
+                        @click:prependInner.stop="copyToClipBoard('Username')"
+                        required
+                    />
+
+                    <v-text-field
+                        v-model="credential.password"
+                        :readonly="!editMode"
+                        :color="editMode ? 'primary' : 'default'"
+                        :prepend-inner-icon="mdiLock"
+                        :append-inner-icon="hidePassword ? mdiEyeOff : mdiEye"
+                        :type="hidePassword ? 'password' : 'text'"
+                        label="Password"
+                        @click:prependInner.stop="copyToClipBoard('Password')"
+                        @click:appendInner.stop="hidePassword = !hidePassword"
+                    />
+
+                    <v-text-field
+                        v-model="credential.url"
+                        :prepend-inner-icon="mdiLinkVariant"
+                        :readonly="!editMode"
+                        :color="editMode ? 'primary' : 'default'"
+                        label="Website URL"
+                        placeholder="https://exemple.com"
+                        outlined
+                        :append-inner-icon="mdiArrowTopRight"
+                        @click:appendInner.stop="win.open(credential.url, '_blank')"
+                    />
+                    <v-btn type="submit" hidden />
+                </v-form>
             </v-card-text>
 
             <v-card-actions class="mb-2 mx-4">
@@ -103,8 +95,11 @@
                 </v-btn>
             </v-card-actions>
         </v-card>
-        <Confirm
+        <!-- FIXME: message don't display on two lines -->
+        <ConfirmationDialog
             :show="showConfirmationDialog"
+            msg="Are you sure you want to delete these credentials? The operation cannot be undone"
+            title="Delete Credential"
             @no="showConfirmationDialog = false"
             @yes="deleteCredential()"
         />
@@ -113,6 +108,20 @@
 
 <style lang="scss">
 @use '@/styles.scss';
+
+/* BUG: there is a bug report (https://github.com/vuetifyjs/vuetify/issues/15403) open
+in the Vuetify repo because dialog max-width is not working correctly.
+Solution: we hijack the default overlay css only on this form (thanks to the ID)*/
+#credentialDialog > .v-overlay__content {
+    // default css
+    max-height: calc(100% - 48px);
+    margin: 24px;
+    display: flex;
+    flex-direction: column;
+    // our addition
+    max-width: 650px;
+    width: 100%;
+}
 
 .copyAlert {
     position: absolute;
@@ -134,7 +143,7 @@ import {
 import { computed, ref, watch } from 'vue';
 import type vuetify from 'vuetify/components';
 
-import Confirm from '@/components/ConfirmationDialog.vue';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import Toast from '@/components/ToastComponent.vue';
 import { sendVault } from '@/services/vault';
 import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
@@ -155,7 +164,6 @@ const emit = defineEmits<{
 const vaultStore = useVaultStore();
 const index = ref(props.index);
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
-
 let timeout: number;
 
 // DOM controls
@@ -167,6 +175,18 @@ const toastMsg = ref('');
 const toastType = ref<'success' | 'error' | 'warning' | 'info'>('error');
 const showConfirmationDialog = ref(false);
 const loading = ref(false);
+const persistent = computed(() => {
+    return (
+        editMode.value &&
+        !(
+            newMode.value &&
+            credential.value.name === '' &&
+            credential.value.url === '' &&
+            credential.value.username === '' &&
+            credential.value.password === ''
+        )
+    );
+});
 
 // form logic
 const websiteNameRules = [(name: string) => !!name || 'Website name is required'];
@@ -191,6 +211,7 @@ const title = computed(() => {
 
 // trigger on load to set correct values of DOM logic and data bindings
 watch(props, (newProps) => {
+    resetErrors();
     index.value = newProps.index;
 
     if (newProps.show) {
@@ -208,10 +229,33 @@ watch(props, (newProps) => {
 });
 
 // handlers
+async function deleteCredential() {
+    showConfirmationDialog.value = false;
+    vaultStore.commit(VAULT_M.DELETE_CREDENTIAL, index.value);
+
+    // then send to backend
+    const res = await sendVault();
+
+    if (res.ok) {
+        // if cloud save ok, and new mode close prompt
+        console.debug('[CREDENTIAL] Deletion success');
+        emit('close');
+    } else {
+        console.debug(`[CREDENTIAL] Deletion failed: [${res.err.code}] ${res.err.message}`);
+        toastType.value = 'error';
+        showToast.value = true;
+        toastMsg.value = res.err.message;
+    }
+}
+
 function cancelChanges() {
+    resetErrors();
+
     if (newMode.value) {
         emit('close');
     } else {
+        editMode.value = false;
+
         credential.value = {
             name: vaultStore.state.credentials[index.value].name,
             url: vaultStore.state.credentials[index.value].url,
@@ -219,8 +263,6 @@ function cancelChanges() {
             password: vaultStore.state.credentials[index.value].password,
         };
     }
-
-    editMode.value = false;
 }
 
 async function saveChanges() {
@@ -246,12 +288,9 @@ async function saveChanges() {
             const res = await sendVault();
 
             if (res.ok) {
-                // if cloud save ok, and new mode close prompt
                 console.debug('[CREDENTIAL] Save successful');
-                editMode.value = false;
-                if (props.index === -1) {
-                    newMode.value = false;
-                }
+
+                emit('close');
             } else {
                 console.debug(`[CREDENTIAL] Save failed: [${res.err.code}] ${res.err.message}`);
                 toastType.value = 'error';
@@ -269,31 +308,16 @@ async function saveChanges() {
         }
 
         loading.value = false;
-        emit('close');
     }
 }
 
-async function deleteCredential() {
-    showConfirmationDialog.value = false;
-    vaultStore.commit(VAULT_M.DELETE_CREDENTIAL, index.value);
-
-    // then send to backend
-    const res = await sendVault();
-
-    if (res.ok) {
-        // if cloud save ok, and new mode close prompt
-        console.debug('[CREDENTIAL] Deletion success');
-        emit('close');
-    } else {
-        console.debug(`[CREDENTIAL] Deletion failed: [${res.err.code}] ${res.err.message}`);
-        toastType.value = 'error';
-        showToast.value = true;
-        toastMsg.value = res.err.message;
-    }
+function resetErrors() {
+    form.value?.resetValidation();
+    showToast.value = false;
 }
 
-function clickOutsideHandler() {
-    if (!editMode.value) {
+function close() {
+    if (!persistent.value) {
         emit('close');
     }
 }

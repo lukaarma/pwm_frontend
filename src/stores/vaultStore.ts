@@ -3,7 +3,7 @@ import { createStore, useStore as baseUseStore, Store } from 'vuex';
 
 // define your typings for the store state
 
-type Credential = {
+export type Credential = {
     name: string;
     url: string;
     username: string;

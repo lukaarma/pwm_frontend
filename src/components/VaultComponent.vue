@@ -30,7 +30,7 @@
 
         <v-row v-for="(_, key) of vaultStore.state.credentials" :key="key">
             <v-col cols="12">
-                <Credential :index="key" @openDialog="openDialog" />
+                <Credential :index="key" @openDialog="openDialog(key)" />
             </v-col>
         </v-row>
     </v-container>

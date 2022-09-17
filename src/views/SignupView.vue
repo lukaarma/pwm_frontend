@@ -24,7 +24,6 @@
         />
 
         <v-text-field
-            transition="scale-transition"
             v-model="user.password"
             label="Password"
             color="primary"
