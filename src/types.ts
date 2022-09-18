@@ -1,6 +1,7 @@
 import type { Credential } from './stores/vaultStore';
 
 /* ===== API types ===== */
+
 export type WebMessage = {
     code: WEB_CODES;
     message: string;
@@ -111,6 +112,7 @@ export enum WEB_CODES {
 }
 
 /* ===== Vault export/import types ===== */
+
 export type ExportedPWMVault =
     | {
           exportDate: Date;
@@ -130,20 +132,72 @@ export type ExportedPWMVault =
           credentials: Array<Credential>;
       };
 
-// NOTE: it's a type guard, it should accept any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BitWardenCredential = {
+    name: string;
+    login: {
+        uris: Array<{
+            uri: string;
+        }>;
+        username: string;
+        password: string;
+    };
+};
+
+export type ExportedBitWardenVault = {
+    // we don't accept encrypted BitWarden vaults
+    encrypted: false;
+    items: Array<BitWardenCredential>;
+};
+
+/* ===== Type guards ===== */
+// NOTE: they are type guards,they should accept any
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export function isExportedPWMVault(vault: any): vault is ExportedPWMVault {
-    if (
+    const checkCommon =
         vault.exportDate instanceof Date &&
         typeof vault.version === 'number' &&
-        vault.lastModified instanceof Date &&
-        ((vault.encrypted === true &&
-            typeof vault.IV === 'string' &&
-            typeof vault.data === 'string') ||
-            (vault.encrypted === false && Array.isArray(vault.credentials)))
-    ) {
-        return true;
-    }
+        vault.lastModified instanceof Date;
 
-    return false;
+    const checkEncrypted =
+        vault.encrypted === true && typeof vault.IV === 'string' && typeof vault.data === 'string';
+
+    const checkDecrypted =
+        vault.encrypted === false &&
+        Array.isArray(vault.credentials) &&
+        vault.credentials.every(isCredential);
+
+    return checkCommon && (checkEncrypted || checkDecrypted);
 }
+
+export function isCredential(credential: any): credential is Credential {
+    return (
+        typeof credential.name === 'string' &&
+        typeof credential.url === 'string' &&
+        typeof credential.username === 'string' &&
+        typeof credential.password === 'string'
+    );
+}
+
+export function isExportedBitWardenVault(vault: any): vault is ExportedBitWardenVault {
+    return (
+        vault.encrypted === false &&
+        Array.isArray(vault.items) &&
+        vault.items.every(isBitWardenCredential)
+    );
+}
+
+function isBitWardenCredential(credential: any): credential is BitWardenCredential {
+    return (
+        typeof credential.name === 'string' &&
+        typeof credential.login === 'object' &&
+        Array.isArray(credential.login.uris) &&
+        credential.login.uris.every(
+            (el: any) => typeof el === 'object' && typeof el.uri === 'string'
+        ) &&
+        typeof credential.login.username === 'string' &&
+        typeof credential.login.password === 'string'
+    );
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

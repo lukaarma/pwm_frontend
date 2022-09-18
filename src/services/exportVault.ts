@@ -1,4 +1,4 @@
-import { exportVault } from '@/services/cryptoUtils';
+import { encryptExportedVault } from '@/services/cryptoUtils';
 import { vaultStore } from '@/stores/vaultStore';
 import type { ExportedPWMVault } from '@/types';
 
@@ -16,7 +16,7 @@ export async function exportJSON(encrypted = false, password?: string): Promise<
             version: vaultStore.state.version,
             lastModified: vaultStore.state.lastModified,
             encrypted,
-            ...(await exportVault(password, exportDate.toUTCString())),
+            ...(await encryptExportedVault(password, exportDate.toUTCString())),
         };
     } else if (encrypted && !password) {
         throw new Error('Requested encrypted export but no password provided!');

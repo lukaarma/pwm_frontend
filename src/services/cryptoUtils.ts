@@ -1,8 +1,8 @@
 import base64 from 'base64-js';
 
-import { VAULT_M, vaultStore } from '@/stores/vaultStore';
+import { VAULT_M, vaultStore, type Credential } from '@/stores/vaultStore';
 import { userStore } from '@/stores/userStore';
-import type { VaultBody } from '@/types';
+import { isCredential, type VaultBody } from '@/types';
 
 // TODO: better error handling
 
@@ -172,7 +172,7 @@ export async function hashCredential(credential: string): Promise<string> {
     return toHex(await crypto.subtle.digest('SHA-1', encoder.encode(credential)));
 }
 
-export async function exportVault(
+export async function encryptExportedVault(
     password: string,
     date: string
 ): Promise<{ IV: string; data: string }> {
@@ -192,6 +192,32 @@ export async function exportVault(
         IV: toHex(IV),
         data: base64.fromByteArray(new Uint8Array(encrypted)),
     };
+}
+
+export async function decryptExportedVault(
+    password: string,
+    date: string,
+    IV: string,
+    data: string
+): Promise<Array<Credential>> {
+    const key = await deriveExportKey(password, date);
+
+    const decrypted = await window.crypto.subtle.decrypt(
+        {
+            name: 'AES-CBC',
+            iv: fromHex(IV),
+        },
+        key,
+        base64.toByteArray(data)
+    );
+
+    const parsed = JSON.parse(decoder.decode(decrypted));
+
+    if (Array.isArray(parsed) && parsed.every(isCredential)) {
+        return parsed;
+    } else {
+        throw new Error('Decrypted credentials are invalid!');
+    }
 }
 
 async function deriveExportKey(password: string, date: string): Promise<CryptoKey> {
