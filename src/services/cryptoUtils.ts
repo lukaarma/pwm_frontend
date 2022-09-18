@@ -168,8 +168,54 @@ export async function encryptVault(): Promise<VaultBody | null> {
     }
 }
 
-export async function hashCredential(credential: string) {
+export async function hashCredential(credential: string): Promise<string> {
     return toHex(await crypto.subtle.digest('SHA-1', encoder.encode(credential)));
+}
+
+export async function exportVault(
+    password: string,
+    date: string
+): Promise<{ IV: string; data: string }> {
+    const key = await deriveExportKey(password, date);
+    const IV = window.crypto.getRandomValues(new Uint8Array(16));
+
+    const encrypted = await window.crypto.subtle.encrypt(
+        {
+            name: 'AES-CBC',
+            iv: IV,
+        },
+        key,
+        encoder.encode(JSON.stringify(vaultStore.state.credentials))
+    );
+
+    return {
+        IV: toHex(IV),
+        data: base64.fromByteArray(new Uint8Array(encrypted)),
+    };
+}
+
+async function deriveExportKey(password: string, date: string): Promise<CryptoKey> {
+    const keyConfig: Pbkdf2Params = {
+        name: 'PBKDF2',
+        hash: 'SHA-512',
+        salt: encoder.encode(date),
+        iterations: 120000,
+    };
+    const keyFormat: AesDerivedKeyParams = {
+        name: 'AES-CBC',
+        length: 256,
+    };
+
+    return window.crypto.subtle.deriveKey(
+        keyConfig,
+        await window.crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, [
+            'deriveBits',
+            'deriveKey',
+        ]),
+        keyFormat,
+        false,
+        ['encrypt', 'decrypt']
+    );
 }
 
 function fromHex(hexString: string) {
