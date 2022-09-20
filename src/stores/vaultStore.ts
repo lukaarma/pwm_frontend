@@ -57,6 +57,26 @@ export const vaultStore = createStore<VaultStore>({
         IV: new Uint8Array(),
         credentials: [],
     },
+    getters: {
+        getCredentials: (state) => (filter: string) => {
+            if (filter === '') {
+                return [...state.credentials.keys()];
+            }
+
+            filter = filter.toLowerCase();
+
+            return state.credentials.reduce((result, cred, index) => {
+                if (
+                    cred.name.toLowerCase().match(filter) ||
+                    cred.username.toLowerCase().match(filter)
+                ) {
+                    result.push(index);
+                }
+
+                return result;
+            }, [] as Array<number>);
+        },
+    },
     mutations: {
         insertCredential(state, insert: MInsertCredential) {
             state.credentials.splice(insert.index, 0, insert.credential);

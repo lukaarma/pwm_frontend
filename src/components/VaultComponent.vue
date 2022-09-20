@@ -27,10 +27,20 @@
                 </v-card>
             </v-col>
         </v-row>
-
-        <v-row v-for="(_, key) of vaultStore.state.credentials" :key="key">
+        <v-row>
             <v-col cols="12">
-                <Credential :index="key" @openDialog="openDialog(key)" />
+                <v-text-field
+                    v-model="credentialsFilter"
+                    label="Search credentials"
+                    :append-inner-icon="mdiMagnify"
+                    single-line
+                    hide-details
+                />
+            </v-col>
+        </v-row>
+        <v-row v-for="index of credentials" :key="index">
+            <v-col cols="12">
+                <Credential :index="index" @openDialog="openDialog(index)" />
             </v-col>
         </v-row>
     </v-container>
@@ -43,14 +53,18 @@
 </style>
 
 <script setup lang="ts">
-import { useVaultStore } from '@/stores/vaultStore';
-import { ref } from 'vue';
-import { mdiPlus } from '@mdi/js';
+import { mdiPlus, mdiMagnify } from '@mdi/js';
+import { computed, ref } from 'vue';
 
 import Credential from '@/components/CredentialComponent.vue';
 import CredentialDialog from '@/components/CredentialDialog.vue';
+import { useVaultStore } from '@/stores/vaultStore';
 
 const vaultStore = useVaultStore();
+
+const credentialsFilter = ref('');
+const credentials = computed(() => vaultStore.getters.getCredentials(credentialsFilter.value));
+
 const showDialog = ref(false);
 const showIndex = ref(-1);
 
