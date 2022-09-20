@@ -15,7 +15,7 @@
             website.
         </v-card-text>
 
-        <v-form ref="form" @submit.prevent="check" fluid class="centerForm mb-4 mx-4">
+        <v-form ref="form" @submit.prevent="check" fluid class="centerForm mb-4">
             <div class="toastContainer">
                 <Toast
                     class="passwordToast"

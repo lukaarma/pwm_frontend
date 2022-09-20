@@ -21,7 +21,7 @@
                         @close="showToast = false"
                     />
                 </div>
-                <v-form ref="form" @submit.prevent="saveChanges" class="mt-8">
+                <v-form ref="form" @submit.prevent="saveChanges(false)" class="mt-8">
                     <v-text-field
                         v-model="credential.name"
                         :rules="websiteNameRules"
@@ -71,8 +71,25 @@
             </v-card-text>
 
             <v-card-actions class="mb-2 mx-4">
-                <v-btn v-if="!newMode" outlined color="red" @click="showConfirmationDialog = true">
+                <v-btn v-if="!newMode" outlined color="red" @click="showDeleteDialog = true">
                     Delete
+                </v-btn>
+                <v-btn
+                    outlined
+                    :loading="loadingPasswordCheck"
+                    color="primary"
+                    @click="checkPassword"
+                >
+                    <v-tooltip
+                        v-if="$vuetify.display.mdAndUp"
+                        activator="parent"
+                        location="bottom"
+                        class="text-center"
+                    >
+                        <div>Check if password was leaked from other websites</div>
+                        Check the "Tools" tab for more info
+                    </v-tooltip>
+                    Check password
                 </v-btn>
                 <v-spacer />
                 <v-btn v-if="editMode" outlined color="primary" @click="cancelChanges">
@@ -83,7 +100,7 @@
                     outlined
                     color="primary"
                     :loading="loading"
-                    @click="saveChanges"
+                    @click="saveChanges(false)"
                 >
                     Save
                 </v-btn>
@@ -97,11 +114,22 @@
         </v-card>
         <!-- FIXME: message don't display on two lines -->
         <ConfirmationDialog
-            :show="showConfirmationDialog"
+            :show="showDeleteDialog"
             msg="Are you sure you want to delete these credentials? The operation cannot be undone"
             title="Delete Credential"
-            @no="showConfirmationDialog = false"
+            @no="showDeleteDialog = false"
             @yes="deleteCredential()"
+        />
+
+        <ConfirmationDialog
+            :show="showOverrideDialog"
+            :msg="`You have already used this password ${samePasswordCount} times, are you sure you want to use it again?`"
+            title="Duplicated password"
+            @no="
+                showOverrideDialog = false;
+                loading = false;
+            "
+            @yes="saveChanges(true)"
         />
     </v-dialog>
 </template>
@@ -147,6 +175,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import Toast from '@/components/ToastComponent.vue';
 import { sendVault } from '@/services/vault';
 import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
+import { checkPWNEDPassword } from '@/services/API';
 
 // NOTE: Vue gives error with window
 const win = window;
@@ -164,7 +193,12 @@ const emit = defineEmits<{
 const vaultStore = useVaultStore();
 const index = ref(props.index);
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
+
 let timeout: number;
+const timeoutLength = 2000;
+
+const samePasswordCount = ref(0);
+const samePasswordMax = 2;
 
 // DOM controls
 const hidePassword = ref(true);
@@ -173,8 +207,12 @@ const editMode = ref(props.index === -1);
 const showToast = ref(false);
 const toastMsg = ref('');
 const toastType = ref<'success' | 'error' | 'warning' | 'info'>('error');
-const showConfirmationDialog = ref(false);
+
+const showDeleteDialog = ref(false);
+const showOverrideDialog = ref(false);
+
 const loading = ref(false);
+const loadingPasswordCheck = ref(false);
 const persistent = computed(() => {
     return (
         editMode.value &&
@@ -230,7 +268,7 @@ watch(props, (newProps) => {
 
 // handlers
 async function deleteCredential() {
-    showConfirmationDialog.value = false;
+    showDeleteDialog.value = false;
     vaultStore.commit(VAULT_M.DELETE_CREDENTIAL, index.value);
 
     // then send to backend
@@ -246,6 +284,36 @@ async function deleteCredential() {
         showToast.value = true;
         toastMsg.value = res.err.message;
     }
+}
+
+async function checkPassword() {
+    clearTimeout(timeout);
+    loadingPasswordCheck.value = true;
+
+    if (credential.value.password !== '') {
+        await checkPWNEDPassword(credential.value.password)
+            .then((res) => {
+                toastType.value = res ? 'error' : 'success';
+                toastMsg.value = `This password has been seen ${res} times before.`;
+            })
+            .catch((err: Error) => {
+                toastType.value = 'error';
+                toastMsg.value = err.message;
+            });
+    } else {
+        toastType.value = 'warning';
+        toastMsg.value = 'Please provide a password to check';
+    }
+
+    showToast.value = true;
+
+    timeout = setTimeout(() => {
+        showToast.value = false;
+    }, timeoutLength);
+    // separate timeout, we don't want this loading to be resettable
+    setTimeout(() => {
+        loadingPasswordCheck.value = false;
+    }, timeoutLength);
 }
 
 function cancelChanges() {
@@ -265,13 +333,28 @@ function cancelChanges() {
     }
 }
 
-async function saveChanges() {
+async function saveChanges(samePasswordOverride = false) {
     if (editMode.value) {
         loading.value = true;
+        showOverrideDialog.value = false;
 
         const validation = await form.value?.validate();
 
         if (validation?.valid) {
+            // same password check
+            if (!samePasswordOverride) {
+                samePasswordCount.value = vaultStore.state.credentials.filter(
+                    (cred) => cred.password === credential.value.password
+                ).length;
+
+                // plus 1 to account the one we are creating
+                if (samePasswordCount.value + 1 > samePasswordMax) {
+                    showOverrideDialog.value = true;
+
+                    return;
+                }
+            }
+
             // if valid save in store
             index.value = await vaultStore.dispatch(VAULT_A.SET_CREDENTIAL, {
                 index: index.value,
@@ -324,6 +407,7 @@ function close() {
 
 function copyToClipBoard(field: 'Username' | 'Password') {
     clearTimeout(timeout);
+
     if (editMode.value) {
         return;
     }
@@ -348,6 +432,6 @@ function copyToClipBoard(field: 'Username' | 'Password') {
 
     timeout = setTimeout(() => {
         showToast.value = false;
-    }, 1500);
+    }, timeoutLength);
 }
 </script>
