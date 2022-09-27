@@ -75,20 +75,23 @@ const user = ref({
 });
 
 async function login() {
+    loading.value = true;
+
     if ((await form.value?.validate())?.valid) {
-        loading.value = true;
         const res = await doLogin(user.value.email, user.value.password);
         if (res.ok) {
             showToast.value = false;
-            loading.value = false;
+
             router.push('/vault');
         } else {
             console.debug(`[LoginView] Login failed:  [${res.err.code}] ${res.err.message}`);
-            loading.value = false;
-            showToast.value = true;
+
             toastMsg.value = res.err.message;
+            showToast.value = true;
         }
     }
+
+    loading.value = false;
 }
 
 function resetForm() {

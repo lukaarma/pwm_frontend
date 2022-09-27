@@ -18,6 +18,8 @@ export default async function (email: string, password: string): Promise<Result>
                 });
 
                 if (!res.data) {
+                    console.debug('[LOGIN] API call failed!');
+
                     return {
                         ok: false,
                         err: res.err ?? {

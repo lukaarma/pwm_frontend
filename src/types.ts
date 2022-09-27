@@ -109,6 +109,7 @@ export enum WEB_CODES {
     FAIL_VAULT_DECRYPT,
     FAIL_VAULT_ENCRYPT,
     INVALID_API_CALL,
+    SERVER_UNREACHABLE
 }
 
 /* ===== Vault export/import types ===== */

@@ -1,7 +1,8 @@
 import axios, { AxiosError } from 'axios';
-import { userStore } from '@/stores/userStore';
-import { hashCredential } from './cryptoUtils';
 
+import { hashCredential } from '@/services/cryptoUtils';
+import { userStore } from '@/stores/userStore';
+import { WEB_CODES } from '@/types';
 import type {
     LoginBody,
     LoginResponse,
@@ -28,8 +29,20 @@ async function login(user: LoginBody): Promise<APIResponse<LoginResponse>> {
         })
         .catch((err: Error | AxiosError) => {
             if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
                 return {
-                    err: err.response?.data as WebMessage,
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
                 };
             } else {
                 throw err;
@@ -46,8 +59,20 @@ async function signup(user: SignupBody): Promise<APIResponse> {
         })
         .catch((err: Error | AxiosError) => {
             if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
                 return {
-                    err: err.response?.data as WebMessage,
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
                 };
             } else {
                 throw err;
@@ -64,8 +89,20 @@ async function sendVerification(email: string): Promise<APIResponse> {
         })
         .catch((err: Error | AxiosError) => {
             if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
                 return {
-                    err: err.response?.data as WebMessage,
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
                 };
             } else {
                 throw err;
@@ -82,8 +119,20 @@ async function getUserInfo(): Promise<APIResponse<UserInfo>> {
         })
         .catch((err: Error | AxiosError) => {
             if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
                 return {
-                    err: err.response?.data as WebMessage,
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
                 };
             } else {
                 throw err;
@@ -102,8 +151,20 @@ async function updateUserInfo(profile: UpdateProfileBody): Promise<APIResponse<U
         })
         .catch((err: Error | AxiosError) => {
             if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
                 return {
-                    err: err.response?.data as WebMessage,
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
                 };
             } else {
                 throw err;
@@ -120,8 +181,20 @@ async function getVault(): Promise<APIResponse<VaultResponse>> {
         })
         .catch((err: Error | AxiosError) => {
             if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
                 return {
-                    err: err.response?.data as WebMessage,
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
                 };
             } else {
                 throw err;
@@ -145,8 +218,20 @@ async function sendVault(vault: VaultBody, createNew = false): Promise<APIRespon
         })
         .catch((err: Error | AxiosError) => {
             if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
                 return {
-                    err: err.response?.data as WebMessage,
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
                 };
             } else {
                 throw err;
