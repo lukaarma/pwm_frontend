@@ -1,5 +1,5 @@
 <template>
-    <v-container class="centerForm">
+    <v-container>
         <v-row>
             <v-col
                 :cols="$vuetify.display.mobile ? 12 : 6"

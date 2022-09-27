@@ -1,5 +1,5 @@
 <template>
-    <v-form ref="form" @submit.prevent="signup" class="centerForm mt-8 px-8">
+    <v-form ref="form" @submit.prevent="signup" class="centerForm mt-8">
         <LogoExtended class="formLogo mb-8" />
 
         <div class="toastContainer">
