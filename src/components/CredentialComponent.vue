@@ -49,6 +49,7 @@ import { mdiAccountBox, mdiKey, mdiArrowTopRight } from '@mdi/js';
 import { computed, ref } from 'vue';
 
 import { useVaultStore } from '@/stores/vaultStore';
+import type { ToastControls } from './ToastComponent.vue';
 
 const props = defineProps<{
     index: number;
@@ -64,10 +65,11 @@ const win = window;
 const vaultStore = useVaultStore();
 
 const credential = computed(() => vaultStore.state.credentials[props.index]);
-
-const showToast = ref(false);
-const toastMsg = ref('');
-const toastType = ref<'success' | 'error' | 'warning' | 'info'>('error');
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+});
 
 let timeout: number;
 function copyToClipBoard(field: 'Username' | 'Password') {
@@ -87,12 +89,12 @@ function copyToClipBoard(field: 'Username' | 'Password') {
             break;
     }
 
-    toastType.value = 'info';
-    toastMsg.value = field + ' copied';
-    showToast.value = true;
+    toastControls.value.type = 'info';
+    toastControls.value.msg = field + ' copied';
+    toastControls.value.show = true;
 
     timeout = setTimeout(() => {
-        showToast.value = false;
+        toastControls.value.show = false;
     }, 1500);
 }
 </script>

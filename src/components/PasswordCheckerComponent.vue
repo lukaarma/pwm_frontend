@@ -20,9 +20,9 @@
                 <Toast
                     class="passwordToast"
                     type="error"
-                    :show="showToast"
-                    :msg="toastMsg"
-                    @close="showToast = false"
+                    :show="toastControls.show"
+                    :msg="toastControls.msg"
+                    @close="toastControls.show = false"
                 />
             </div>
 
@@ -84,7 +84,7 @@ import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import { checkPWNEDPassword } from '@/services/API';
-import Toast from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 
 // DOM content
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
@@ -93,9 +93,11 @@ const hidePassword = ref(true);
 
 // toast controls
 const loading = ref(false);
-const showToast = ref(false);
-const toastMsg = ref('');
-const toastType = ref<'success' | 'error' | 'warning' | 'info'>('success');
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+});
 
 // rules
 const passwordRules = [(psw: string) => !!psw || 'Password is required'];
@@ -113,14 +115,14 @@ async function check() {
     if ((await form.value?.validate())?.valid) {
         matches.value = await checkPWNEDPassword(password.value)
             .then((res) => {
-                showToast.value = false;
+                toastControls.value.show = false;
 
                 return res;
             })
             .catch((err: Error) => {
-                toastType.value = 'error';
-                toastMsg.value = err.message;
-                showToast.value = true;
+                toastControls.value.type = 'error';
+                toastControls.value.msg = err.message;
+                toastControls.value.show = true;
 
                 return -1;
             });
@@ -131,11 +133,11 @@ async function check() {
     } else {
         clearTimeout(timeout);
 
-        toastType.value = 'error';
-        toastMsg.value = 'Please insert a password';
-        showToast.value = true;
+        toastControls.value.type = 'error';
+        toastControls.value.msg = 'Please insert a password';
+        toastControls.value.show = true;
 
-        timeout = setTimeout(() => (showToast.value = false), timeoutLength);
+        timeout = setTimeout(() => (toastControls.value.show = false), timeoutLength);
         loading.value = false;
     }
 }
@@ -143,6 +145,6 @@ async function check() {
 function clear() {
     form.value?.reset();
     matches.value = -1;
-    showToast.value = false;
+    toastControls.value.show = false;
 }
 </script>

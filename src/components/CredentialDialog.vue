@@ -15,10 +15,10 @@
                 <div class="toastContainer">
                     <Toast
                         class="copyAlert"
-                        :type="toastType"
-                        :show="showToast"
-                        :msg="toastMsg"
-                        @close="showToast = false"
+                        :type="toastControls.type"
+                        :show="toastControls.show"
+                        :msg="toastControls.msg"
+                        @close="toastControls.show = false"
                     />
                 </div>
                 <v-form ref="form" @submit.prevent="saveChanges(false)" class="mt-8">
@@ -115,7 +115,7 @@
         <!-- FIXME: message don't display on two lines -->
         <ConfirmationDialog
             :show="showDeleteDialog"
-            msg="Are you sure you want to delete these credentials? The operation cannot be undone"
+            :msg="'Are you sure you want to delete these credentials?\nThe operation cannot be undone'"
             title="Delete Credential"
             @no="showDeleteDialog = false"
             @yes="deleteCredential()"
@@ -123,7 +123,7 @@
 
         <ConfirmationDialog
             :show="showOverrideDialog"
-            :msg="`You have already used this password ${samePasswordCount} times, are you sure you want to use it again?`"
+            :msg="`You have already used this password ${samePasswordCount} times.\nAre you sure you want to use it again?`"
             title="Duplicated password"
             @no="
                 showOverrideDialog = false;
@@ -172,7 +172,7 @@ import { computed, ref, watch } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-import Toast from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import { sendVault } from '@/services/vault';
 import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
 import { checkPWNEDPassword } from '@/services/API';
@@ -204,9 +204,11 @@ const samePasswordMax = 2;
 const hidePassword = ref(true);
 const newMode = ref(props.index === -1);
 const editMode = ref(props.index === -1);
-const showToast = ref(false);
-const toastMsg = ref('');
-const toastType = ref<'success' | 'error' | 'warning' | 'info'>('error');
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+});
 
 const showDeleteDialog = ref(false);
 const showOverrideDialog = ref(false);
@@ -280,9 +282,9 @@ async function deleteCredential() {
         emit('close');
     } else {
         console.debug(`[CREDENTIAL] Deletion failed: [${res.err.code}] ${res.err.message}`);
-        toastType.value = 'error';
-        showToast.value = true;
-        toastMsg.value = res.err.message;
+        toastControls.value.type = 'error';
+        toastControls.value.show = true;
+        toastControls.value.msg = res.err.message;
     }
 }
 
@@ -293,22 +295,22 @@ async function checkPassword() {
     if (credential.value.password !== '') {
         await checkPWNEDPassword(credential.value.password)
             .then((res) => {
-                toastType.value = res ? 'error' : 'success';
-                toastMsg.value = `This password has been seen ${res} times before.`;
+                toastControls.value.type = res ? 'error' : 'success';
+                toastControls.value.msg = `This password has been seen ${res} times before.`;
             })
             .catch((err: Error) => {
-                toastType.value = 'error';
-                toastMsg.value = err.message;
+                toastControls.value.type = 'error';
+                toastControls.value.msg = err.message;
             });
     } else {
-        toastType.value = 'warning';
-        toastMsg.value = 'Please provide a password to check';
+        toastControls.value.type = 'warning';
+        toastControls.value.msg = 'Please provide a password to check';
     }
 
-    showToast.value = true;
+    toastControls.value.show = true;
 
     timeout = setTimeout(() => {
-        showToast.value = false;
+        toastControls.value.show = false;
     }, timeoutLength);
     // separate timeout, we don't want this loading to be resettable
     setTimeout(() => {
@@ -376,18 +378,18 @@ async function saveChanges(samePasswordOverride = false) {
                 emit('close');
             } else {
                 console.debug(`[CREDENTIAL] Save failed: [${res.err.code}] ${res.err.message}`);
-                toastType.value = 'error';
-                showToast.value = true;
-                toastMsg.value = res.err.message;
+                toastControls.value.type = 'error';
+                toastControls.value.show = true;
+                toastControls.value.msg = res.err.message;
             }
         } else {
             console.debug(
                 `[saveChanges] Validation error: ${validation?.errors[0].errorMessages[0]}`
             );
             // Print validation error on Error Toast
-            toastMsg.value = validation?.errors[0].errorMessages[0] ?? 'Error';
-            toastType.value = 'warning';
-            showToast.value = true;
+            toastControls.value.msg = validation?.errors[0].errorMessages[0] ?? 'Error';
+            toastControls.value.type = 'warning';
+            toastControls.value.show = true;
         }
 
         loading.value = false;
@@ -396,7 +398,7 @@ async function saveChanges(samePasswordOverride = false) {
 
 function resetErrors() {
     form.value?.resetValidation();
-    showToast.value = false;
+    toastControls.value.show = false;
 }
 
 function close() {
@@ -426,12 +428,12 @@ function copyToClipBoard(field: 'Username' | 'Password') {
             break;
     }
 
-    toastType.value = 'info';
-    toastMsg.value = field + ' copied';
-    showToast.value = true;
+    toastControls.value.type = 'info';
+    toastControls.value.msg = field + ' copied';
+    toastControls.value.show = true;
 
     timeout = setTimeout(() => {
-        showToast.value = false;
+        toastControls.value.show = false;
     }, timeoutLength);
 }
 </script>

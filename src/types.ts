@@ -77,7 +77,9 @@ export enum WEB_CODES {
     USERINFO_SAVED_SUCCESS,
     VERIFICATION_TOKEN_SENT = 110,
     PROFILE_VERIFIED = 120,
+    ACCOUNT_DELETED,
     VAULT_UPDATED = 130,
+    VAULT_DELETED,
 
     LOGIN_FAILED = 300,
     SIGNUP_ERROR = 310,
@@ -92,6 +94,9 @@ export enum WEB_CODES {
     VAULT_LOWER_VERSION = 370,
     VAULT_OLDER_DATE,
 
+    UNCAUGHT_EXCEPTION = 500,
+    VALID_JWT_INVALID_ID,
+
     SYNTAX_BAD_REQUEST = 600,
     LOGIN_BAD_REQUEST,
     SIGNUP_BAD_REQUEST,
@@ -100,6 +105,8 @@ export enum WEB_CODES {
     VERIFY_TOKEN_BAD_REQUEST,
     PSK_BAD_REQUEST,
     VAULT_BAD_REQUEST,
+    WRONG_PASSWORD,
+    DELETE_BAD_REQUEST,
 
     VAULT_DECRYPTED = 800,
     LOGIN_SUCCESS,
@@ -109,7 +116,7 @@ export enum WEB_CODES {
     FAIL_VAULT_DECRYPT,
     FAIL_VAULT_ENCRYPT,
     INVALID_API_CALL,
-    SERVER_UNREACHABLE
+    SERVER_UNREACHABLE,
 }
 
 /* ===== Vault export/import types ===== */
@@ -202,3 +209,10 @@ function isBitWardenCredential(credential: any): credential is BitWardenCredenti
 }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+// global enums
+
+export enum DELETE_SELECTION {
+    VAULT = 'Vault',
+    ACCOUNT = 'Account',
+}

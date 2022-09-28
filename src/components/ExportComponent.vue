@@ -13,9 +13,9 @@
                 <Toast
                     class="formToast"
                     type="info"
-                    :show="showToast"
-                    :msg="toastMsg"
-                    @close="showToast = false"
+                    :show="toastControls.show"
+                    :msg="toastControls.msg"
+                    @close="toastControls.show = false"
                 />
             </div>
 
@@ -77,7 +77,7 @@ import { ref, computed } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-import Toast from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import { exportJSON } from '@/services/exportVault';
 
 // DOM content
@@ -111,8 +111,12 @@ const repeatPasswordRules = [
 
 // toast controls
 const loading = ref(false);
-const showToast = ref(false);
-const toastMsg = ref('');
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+});
+
 const timeoutLength = 2000;
 let timeout: number;
 
@@ -144,11 +148,11 @@ async function exportVault(override = false) {
         download.value.href = `data:application/json;charset=utf-8,${data}`;
         download.value.click();
 
-        toastMsg.value = 'File created! Download should start any moment...';
-        showToast.value = true;
+        toastControls.value.msg = 'File created! Download should start any moment...';
+        toastControls.value.show = true;
 
         timeout = setTimeout(() => {
-            showToast.value = false;
+            toastControls.value.show = false;
             if (download.value) {
                 download.value.href = '';
             }

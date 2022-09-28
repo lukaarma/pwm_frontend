@@ -6,9 +6,9 @@
             <Toast
                 class="formError"
                 type="error"
-                :show="showToast"
-                :msg="toastMsg"
-                @close="showToast = false"
+                :show="toastControls.show"
+                :msg="toastControls.msg"
+                @close="toastControls.show = false"
             />
         </div>
 
@@ -52,13 +52,16 @@ import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import LogoExtended from '@/components/LogoExtended.vue';
-import Toast from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import router from '@/router';
 import doLogin from '@/services/login';
 
 const loading = ref(false);
-const showToast = ref(false);
-const toastMsg = ref('');
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+});
 const hidePassword = ref(true);
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
 
@@ -80,14 +83,14 @@ async function login() {
     if ((await form.value?.validate())?.valid) {
         const res = await doLogin(user.value.email, user.value.password);
         if (res.ok) {
-            showToast.value = false;
+            toastControls.value.show = false;
 
             router.push('/vault');
         } else {
             console.debug(`[LoginView] Login failed:  [${res.err.code}] ${res.err.message}`);
 
-            toastMsg.value = res.err.message;
-            showToast.value = true;
+            toastControls.value.msg = res.err.message;
+            toastControls.value.show = true;
         }
     }
 
@@ -96,7 +99,7 @@ async function login() {
 
 function resetForm() {
     form.value?.reset();
-    showToast.value = false;
+    toastControls.value.show = false;
     loading.value = false;
 }
 </script>

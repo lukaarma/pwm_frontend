@@ -12,10 +12,10 @@
             <div class="toastContainer">
                 <Toast
                     class="formToast"
-                    type="error"
-                    :show="showToast"
-                    :msg="toastMsg"
-                    @close="showToast = false"
+                    :type="toastControls.type"
+                    :show="toastControls.show"
+                    :msg="toastControls.msg"
+                    @close="toastControls.show = false"
                 />
             </div>
 
@@ -66,7 +66,7 @@ import { mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 import { computed, ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
-import Toast from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import { importNativeJSON, importBitwardenJSON } from '@/services/importVault';
 import { sendVault } from '@/services/vault';
 
@@ -93,9 +93,11 @@ const hidePassword = ref(true);
 
 // toast controls
 const loading = ref(false);
-const showToast = ref(false);
-const toastMsg = ref('');
-const toastType = ref<'success' | 'error' | 'warning' | 'info'>('info');
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+});
 
 // rules
 const inputFilesRules = [
@@ -106,7 +108,7 @@ const inputFilesRules = [
 
 async function importFile() {
     loading.value = true;
-    showToast.value = false;
+    toastControls.value.show = false;
     clearTimeout(timeout);
 
     if ((await importForm.value?.validate())?.valid) {
@@ -130,23 +132,23 @@ async function importFile() {
 
             if (res.ok) {
                 console.debug('[IMPORT] Save successful');
-                toastType.value = 'info';
-                toastMsg.value =
+                toastControls.value.type = 'success';
+                toastControls.value.msg =
                     'Import successful, please check the vault tab to find your new credentials';
-                showToast.value = true;
+                toastControls.value.show = true;
 
-                timeout = setTimeout(() => (showToast.value = false), timeoutLength);
+                timeout = setTimeout(() => (toastControls.value.show = false), timeoutLength);
             } else {
                 console.debug(`[CREDENTIAL] Save failed: [${res.err.code}] ${res.err.message}`);
-                toastType.value = 'info';
-                toastMsg.value = res.err.message;
-                showToast.value = true;
+                toastControls.value.type = 'info';
+                toastControls.value.msg = res.err.message;
+                toastControls.value.show = true;
             }
         } catch (err) {
             if (err instanceof Error) {
-                toastType.value = 'error';
-                toastMsg.value = err.message;
-                showToast.value = true;
+                toastControls.value.type = 'error';
+                toastControls.value.msg = err.message;
+                toastControls.value.show = true;
             }
         }
     }

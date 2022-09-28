@@ -6,9 +6,9 @@
             <Toast
                 class="formError"
                 type="error"
-                :show="showToast"
-                :msg="toastMsg"
-                @close="showToast = false"
+                :show="toastControls.show"
+                :msg="toastControls.msg"
+                @close="toastControls.show = false"
             />
         </div>
 
@@ -90,7 +90,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type vuetify from 'vuetify/components';
 
-import Toast from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import LogoExtended from '@/components/LogoExtended.vue';
 import doSignup from '@/services/signup';
 
@@ -104,8 +104,11 @@ const user = ref({
 
 const loading = ref(false);
 const hidePassword = ref(true);
-const showToast = ref(false);
-const toastMsg = ref('');
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+});
 
 const router = useRouter();
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
@@ -148,7 +151,7 @@ async function resetForm() {
 }
 
 async function signup(): Promise<void> {
-    showToast.value = false;
+    toastControls.value.show = false;
     loading.value = true;
     console.debug('[SignupView] Signup start');
 
@@ -160,8 +163,8 @@ async function signup(): Promise<void> {
             goVerification(true);
         } else {
             console.debug(`[SignupView] Signup failed:  [${res.err.code}] ${res.err.message}`);
-            showToast.value = true;
-            toastMsg.value = res.err.message;
+            toastControls.value.show = true;
+            toastControls.value.msg = res.err.message;
             loading.value = false;
         }
     }
