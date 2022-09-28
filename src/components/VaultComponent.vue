@@ -27,17 +27,32 @@
                 </v-card>
             </v-col>
         </v-row>
+
         <v-row>
             <v-col cols="12">
                 <v-text-field
                     v-model="credentialsFilter"
                     label="Search credentials"
-                    :append-inner-icon="mdiMagnify"
+                    :prepend-inner-icon="mdiMagnify"
                     single-line
                     hide-details
+                    clearable
                 />
             </v-col>
         </v-row>
+
+        <v-row v-show="credentials.length === 0" class="mt-8">
+            <v-col>
+                <h2 class="text-center font-weight-light">
+                    {{
+                        credentialsFilter
+                            ? 'No credential found that match the filter'
+                            : 'Vault is empty'
+                    }}
+                </h2>
+            </v-col>
+        </v-row>
+
         <v-row v-for="index of credentials" :key="index">
             <v-col cols="12">
                 <Credential :index="index" @openDialog="openDialog(index)" />
@@ -63,7 +78,9 @@ import { useVaultStore } from '@/stores/vaultStore';
 const vaultStore = useVaultStore();
 
 const credentialsFilter = ref('');
-const credentials = computed(() => vaultStore.getters.getCredentials(credentialsFilter.value));
+const credentials = computed<Array<number>>(() =>
+    vaultStore.getters.getCredentials(credentialsFilter.value)
+);
 
 const showDialog = ref(false);
 const showIndex = ref(-1);
