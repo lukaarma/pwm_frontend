@@ -39,7 +39,8 @@
                         :color="editMode ? 'primary' : 'default'"
                         label="Username"
                         :prepend-inner-icon="mdiAccountBox"
-                        @click:prependInner.stop="copyToClipBoard('Username')"
+                        :append-inner-icon="mdiContentCopy"
+                        @click:appendInner.stop="copyToClipBoard('Username')"
                         required
                     />
 
@@ -48,12 +49,21 @@
                         :readonly="!editMode"
                         :color="editMode ? 'primary' : 'default'"
                         :prepend-inner-icon="mdiLock"
-                        :append-inner-icon="hidePassword ? mdiEyeOff : mdiEye"
                         :type="hidePassword ? 'password' : 'text'"
                         label="Password"
-                        @click:prependInner.stop="copyToClipBoard('Password')"
-                        @click:appendInner.stop="hidePassword = !hidePassword"
-                    />
+                    >
+                        <template v-slot:append-inner>
+                            <v-icon
+                                class="mr-2"
+                                :icon="hidePassword ? mdiEyeOff : mdiEye"
+                                @click.stop="hidePassword = !hidePassword"
+                            />
+                            <v-icon
+                                :icon="mdiContentCopy"
+                                @click.stop="copyToClipBoard('Password')"
+                            />
+                        </template>
+                    </v-text-field>
 
                     <v-text-field
                         v-model="credential.url"
@@ -70,10 +80,11 @@
                 </v-form>
             </v-card-text>
 
-            <v-card-actions class="mb-2 mx-4">
+            <v-card-actions class="mb-2 mx-4" v-if="!$vuetify.display.mobile">
                 <v-btn v-if="!newMode" outlined color="red" @click="showDeleteDialog = true">
                     Delete
                 </v-btn>
+
                 <v-btn
                     outlined
                     :loading="loadingPasswordCheck"
@@ -91,7 +102,9 @@
                     </v-tooltip>
                     Check password
                 </v-btn>
+
                 <v-spacer />
+
                 <v-btn v-if="editMode" outlined color="primary" @click="cancelChanges">
                     Cancel
                 </v-btn>
@@ -111,8 +124,53 @@
                     Edit
                 </v-btn>
             </v-card-actions>
+
+            <v-card-actions v-else class="mb-2 mx-4">
+                <div class="d-flex flex-column align-start">
+                    <v-btn
+                        outlined
+                        :loading="loadingPasswordCheck"
+                        color="primary"
+                        @click="checkPassword"
+                    >
+                        Check password
+                    </v-btn>
+                    <v-btn
+                        :disabled="newMode"
+                        @click="showDeleteDialog = true"
+                        outlined
+                        color="red"
+                        class="ma-0"
+                    >
+                        Delete
+                    </v-btn>
+                </div>
+
+                <v-spacer />
+
+                <div class="d-flex flex-column align-end">
+                    <v-btn v-if="editMode" outlined color="primary" @click="cancelChanges">
+                        Cancel
+                    </v-btn>
+                    <v-btn v-else outlined color="primary" @click="$emit('close')"> Close </v-btn>
+
+                    <v-btn
+                        v-if="editMode"
+                        :loading="loading"
+                        @click="saveChanges(false)"
+                        outlined
+                        color="primary"
+                        class="ma-0"
+                    >
+                        Save
+                    </v-btn>
+                    <v-btn v-else@click="(editMode = true)" outlined color="primary" class="ma-0">
+                        Edit
+                    </v-btn>
+                </div>
+            </v-card-actions>
         </v-card>
-        <!-- FIXME: message don't display on two lines -->
+
         <ConfirmationDialog
             :show="showDeleteDialog"
             :msg="'Are you sure you want to delete these credentials?\nThe operation cannot be undone'"
@@ -167,15 +225,17 @@ import {
     mdiArrowTopRight,
     mdiLinkVariant,
     mdiWeb,
+    mdiContentCopy,
 } from '@mdi/js';
 import { computed, ref, watch } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
-import { sendVault } from '@/services/vault';
-import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
 import { checkPWNEDPassword } from '@/services/API';
+import { sendVault } from '@/services/vault';
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import { urlProtocolRegex } from '@/services/utils';
+import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
 
 // NOTE: Vue gives error with window
 const win = window;
@@ -355,6 +415,11 @@ async function saveChanges(samePasswordOverride = false) {
 
                     return;
                 }
+            }
+
+            // check for url protocol
+            if (credential.value.url && !urlProtocolRegex.test(credential.value.url)) {
+                credential.value.url = `http://${credential.value.url}`;
             }
 
             // if valid save in store
