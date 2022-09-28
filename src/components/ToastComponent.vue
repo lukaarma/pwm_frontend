@@ -2,7 +2,7 @@
     <v-slide-y-reverse-transition v-show="show" duration="300">
         <v-alert :type="type" closable density="compact">
             <template v-slot:close>
-                <v-btn @click="emit('close')" :icon="mdiClose"></v-btn>
+                <v-btn @click="$emit('close')" :icon="mdiClose"></v-btn>
             </template>
             {{ msg }}
         </v-alert>
@@ -12,13 +12,18 @@
 <script setup lang="ts">
 import { mdiClose } from '@mdi/js';
 
+export type ToastControls = {
+    show: boolean;
+    msg: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+};
+
 defineProps<{
     type: 'error' | 'success' | 'warning' | 'info';
     msg: string;
     show: boolean;
 }>();
-
-const emit = defineEmits<{
+defineEmits<{
     (e: 'close'): void;
 }>();
 </script>

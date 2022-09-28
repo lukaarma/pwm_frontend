@@ -63,23 +63,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 import { useUserStore } from '@/stores/userStore';
-import { VAULT_M, useVaultStore } from '@/stores/vaultStore';
+import { logout } from '@/services/utils';
 
-const router = useRouter();
 const userStore = useUserStore();
-const vaultStore = useVaultStore();
 
 const firstNameEl = ref<HTMLHeadingElement | null>(null);
 const firstNameOverflow = computed(
     () => (firstNameEl.value?.scrollWidth ?? 0) > (firstNameEl.value?.clientWidth ?? 0)
 );
-
-function logout() {
-    userStore.commit('logout');
-    vaultStore.commit(VAULT_M.LOGOUT);
-    router.push('/login');
-}
 </script>
