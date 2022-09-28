@@ -59,6 +59,7 @@ export async function getVault(): Promise<Result> {
 
     console.debug('[getVault] Got vault from server, decrypting');
     if (await decryptVault(res.data)) {
+
         return {
             ok: true,
             data: {
@@ -92,9 +93,10 @@ export async function sendVault(createNew = false): Promise<Result> {
         console.debug('[sendVault] Vault saved, sending to database');
         if (vault) {
             const res = await API.sendVault(vault, createNew);
-            console.debug('[sendVault] Vault sent to database');
+
 
             if (res.data) {
+                console.debug('[sendVault] Vault sent to database');
                 localStorage.removeItem('vault');
 
                 return {

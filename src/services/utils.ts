@@ -18,3 +18,5 @@ export function logout() {
     vaultStore.commit(VAULT_M.LOGOUT);
     router.push('/login');
 }
+
+export const urlProtocolRegex = /^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//;

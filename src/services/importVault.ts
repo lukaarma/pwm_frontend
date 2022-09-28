@@ -1,7 +1,8 @@
 import { isExportedBitWardenVault, isExportedPWMVault } from '@/types';
 import { decryptExportedVault } from '@/services/cryptoUtils';
 import { JSONDateParser } from '@/services/utils';
-import { type Credential, vaultStore, VAULT_A } from '@/stores/vaultStore';
+import { type Credential, vaultStore, VAULT_M } from '@/stores/vaultStore';
+import { urlProtocolRegex } from '@/services/utils';
 
 export async function importNativeJSON(file: File, password: string) {
     let parsedImport;
@@ -32,12 +33,14 @@ export async function importNativeJSON(file: File, password: string) {
             credentials = parsedImport.credentials;
         }
 
-        credentials.forEach((credential) =>
-            vaultStore.dispatch(VAULT_A.SET_CREDENTIAL, {
-                index: -1,
-                credential,
-            })
-        );
+        credentials.forEach((cred) => {
+            cred.name ??= 'Imported';
+            if (cred.url && !urlProtocolRegex.test(cred.url)) {
+                cred.url = `http://${cred.url}`;
+            }
+        });
+
+        vaultStore.commit(VAULT_M.BULK_INSERT_CREDENTIAL, credentials);
     } else {
         throw new Error(
             'The JSON provided is not in the native PWM format! Please check that you have the correct file selected!'
@@ -59,18 +62,22 @@ export async function importBitwardenJSON(file: File) {
 
     if (isExportedBitWardenVault(parsedImport)) {
         console.debug('[IMPORT_NATIVE] Valid ExportedPWMVault provided');
+        const credentials = parsedImport.items.map((item) => {
+            let url = item.login.uris[0].uri ?? '';
 
-        parsedImport.items.forEach((item) => {
-            vaultStore.dispatch(VAULT_A.SET_CREDENTIAL, {
-                index: -1,
-                credential: {
-                    name: item.name,
-                    url: item.login.uris[0].uri ?? '',
-                    username: item.login.username,
-                    password: item.login.password,
-                },
-            });
+            if (url && !urlProtocolRegex.test(url)) {
+                url = `http://${url}`;
+            }
+
+            return {
+                name: item.name ?? 'Imported',
+                url,
+                username: item.login.username,
+                password: item.login.password,
+            } as Credential;
         });
+
+        vaultStore.commit(VAULT_M.BULK_INSERT_CREDENTIAL, credentials);
     } else {
         throw new Error(
             'The JSON provided is not in the BitWarden format! Please check that you have the correct file selected!'

@@ -39,6 +39,7 @@ export const vaultKey: InjectionKey<Store<VaultStore>> = Symbol();
 // mutations/actions names
 export const VAULT_M = {
     INSERT_CREDENTIAL: 'insertCredential',
+    BULK_INSERT_CREDENTIAL: 'bulkInsertCredential',
     UPDATE_CREDENTIAL: 'updateCredential',
     DELETE_CREDENTIAL: 'deleteCredential',
     SET_VAULT: 'setVault',
@@ -85,6 +86,14 @@ export const vaultStore = createStore<VaultStore>({
             state.lastModified = new Date();
             window.crypto.getRandomValues(state.IV);
         },
+        bulkInsertCredential(state, credentials: Array<Credential>) {
+            state.credentials = state.credentials.concat(credentials);
+            state.credentials.sort((a, b) => a.name.localeCompare(b.name));
+
+            state.version++;
+            state.lastModified = new Date();
+            window.crypto.getRandomValues(state.IV);
+        },
         updateCredential(state, update: MUpdateCredential) {
             if (update.newIndex) {
                 // delete at current index
@@ -112,7 +121,9 @@ export const vaultStore = createStore<VaultStore>({
             state.IV = newVault.IV ?? state.IV;
             state.credentials = newVault.credentials ?? state.credentials;
 
-            state.credentials.sort((a, b) => a.name.localeCompare(b.name));
+            if (newVault.credentials) {
+                state.credentials.sort((a, b) => a.name.localeCompare(b.name));
+            }
         },
         logout(state) {
             state.version = 0;
