@@ -41,7 +41,7 @@
         </div>
     </v-form>
 
-    <div class="centerForm mt-16 d-flex justify-space-between">
+    <div class="centerForm mt-16 d-flex flex-column align-center">
         <v-btn
             @click="
                 deleteSelection = DELETE_SELECTION.VAULT;
@@ -51,7 +51,7 @@
             :loading="loading.deleteVault"
             size="large"
             color="error"
-            class="fixedButtons mr-4"
+            class="mb-8 deleteButton"
         >
             Delete Vault
         </v-btn>
@@ -65,12 +65,10 @@
             :loading="loading.deleteAccount"
             size="large"
             color="error"
-            class="fixedButtons mr-4"
+            class="mb-8 deleteButton"
         >
             Delete Account
         </v-btn>
-
-        <v-btn @click="logout" size="large" color="error" class="fixedButtons"> Logout </v-btn>
     </div>
 
     <ConfirmationDialog
@@ -92,17 +90,16 @@
     />
 </template>
 
-<style lang="scss">
-@use '@/styles.scss';
-
+<style scoped lang="scss">
 .formMessage {
     position: absolute;
     width: 100%;
     transform: translate(0, -120%);
 }
 
-.fixedButtons {
-    width: 11rem;
+.deleteButton {
+    max-width: 70%;
+    width: 100%;
 }
 </style>
 

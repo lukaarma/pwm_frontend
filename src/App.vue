@@ -14,6 +14,10 @@
     </v-app>
 </template>
 
+<style lang="scss">
+@use '@/styles.scss';
+</style>
+
 <script setup lang="ts">
 import Navbar from '@/components/NavbarComponent.vue';
 import Footer from '@/components/FooterComponent.vue';
