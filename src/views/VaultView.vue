@@ -9,7 +9,7 @@
 
         <v-card-text class="tabs">
             <v-window v-model="tab" disabled>
-                <v-window-item value="Vault">
+                <v-window-item class="windows" value="Vault">
                     <Vault />
                 </v-window-item>
 
@@ -17,7 +17,7 @@
                     <PasswordChecker class="mt-1 mb-4 mx-1" />
                 </v-window-item>
 
-                <v-window-item value="Import">
+                <v-window-item class="windows" value="Import">
                     <ImportComponent class="mb-4 mx-1" />
                 </v-window-item>
 

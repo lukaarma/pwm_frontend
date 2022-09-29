@@ -1,7 +1,7 @@
 <template>
     <v-app :theme="configStore.state.darkMode ? 'dark' : 'light'">
         <v-main>
-            <Navbar
+            <AppNavbar
                 :darkMode="configStore.state.darkMode"
                 @toggleDarkMode="configStore.commit('toggleDarkMode')"
             />
@@ -9,7 +9,7 @@
             <Suspense>
                 <router-view />
             </Suspense>
-            <Footer />
+            <AppFooter />
         </v-main>
     </v-app>
 </template>
@@ -19,8 +19,8 @@
 </style>
 
 <script setup lang="ts">
-import Navbar from '@/components/NavbarComponent.vue';
-import Footer from '@/components/FooterComponent.vue';
+import AppNavbar from '@/components/NavbarComponent.vue';
+import AppFooter from '@/components/FooterComponent.vue';
 import { useConfigStore } from '@/stores/configStore';
 
 const configStore = useConfigStore();
