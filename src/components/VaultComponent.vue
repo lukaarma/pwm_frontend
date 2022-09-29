@@ -1,35 +1,33 @@
 <template>
-    <v-container>
+    <v-container class="pt-4 vault" :class="{ 'pa-1': $vuetify.display.mobile }">
         <v-row>
             <v-col
                 :cols="$vuetify.display.mobile ? 12 : 6"
                 :offset="$vuetify.display.mobile ? 0 : 3"
                 class="pt-0"
             >
-                <v-card>
-                    <v-btn
-                        color="primary"
-                        :prependIcon="mdiPlus"
-                        size="x-large"
-                        block
-                        @click="openDialog(-1)"
+                <v-btn
+                    color="primary"
+                    :prependIcon="mdiPlus"
+                    size="x-large"
+                    block
+                    @click="openDialog(-1)"
+                >
+                    Add credential
+                    <v-tooltip
+                        v-if="$vuetify.display.mdAndUp"
+                        activator="parent"
+                        location="left"
+                        class="white-text"
                     >
-                        Add credential
-                        <v-tooltip
-                            v-if="$vuetify.display.mdAndUp"
-                            activator="parent"
-                            location="left"
-                            class="white-text"
-                        >
-                            Insert a new credential
-                        </v-tooltip>
-                    </v-btn>
-                </v-card>
+                        Insert a new credential
+                    </v-tooltip>
+                </v-btn>
             </v-col>
         </v-row>
 
         <v-row>
-            <v-col cols="12">
+            <v-col>
                 <v-text-field
                     v-model="credentialsFilter"
                     label="Search credentials"
@@ -54,17 +52,34 @@
         </v-row>
 
         <v-row v-for="index of credentials" :key="index">
-            <v-col cols="12">
-                <Credential :index="index" @openDialog="openDialog(index)" />
+            <v-col>
+                <Credential
+                    :index="index"
+                    :rowHeight="rowHeight"
+                    @click="openDialog(index)"
+                    @openEditDialog="openDialog(index, true)"
+                    @openSnackbar="openSnackbar"
+                />
             </v-col>
         </v-row>
     </v-container>
 
-    <CredentialDialog :show="showDialog" :index="showIndex" @close="closeDialog" />
+    <CredentialDialog
+        :show="showDialog"
+        :edit="editDialog"
+        :index="showIndex"
+        @close="closeDialog"
+    />
+
+    <v-snackbar v-model="snackbar.show" color="primary" elevation="24">
+        {{ snackbar.msg }}
+    </v-snackbar>
 </template>
 
-<style lang="scss">
-@use '@/styles.scss';
+<style scoped lang="scss">
+.vault {
+    max-width: 900px;
+}
 </style>
 
 <script setup lang="ts">
@@ -76,6 +91,7 @@ import CredentialDialog from '@/components/CredentialDialog.vue';
 import { useVaultStore } from '@/stores/vaultStore';
 
 const vaultStore = useVaultStore();
+const rowHeight = 124;
 
 const credentialsFilter = ref('');
 const credentials = computed<Array<number>>(() =>
@@ -83,12 +99,38 @@ const credentials = computed<Array<number>>(() =>
 );
 
 const showDialog = ref(false);
+const editDialog = ref(false);
 const showIndex = ref(-1);
 
-function openDialog(i: number) {
-    console.debug(`[VAULT] Opening dialog with index ${showIndex.value}`);
+const snackbar = ref<{
+    show: boolean;
+    msg: string;
+    timeout: undefined | number;
+    timeoutLength: number;
+}>({
+    show: false,
+    msg: '',
+    timeout: undefined,
+    timeoutLength: 2000,
+});
+
+function openDialog(i: number, edit = false) {
+    console.debug(`[VAULT] Opening dialog with index ${i}`);
     showIndex.value = i;
+    editDialog.value = edit;
     showDialog.value = true;
+}
+
+function openSnackbar(msg: string) {
+    clearTimeout(snackbar.value.timeout);
+
+    snackbar.value.msg = msg;
+    snackbar.value.show = true;
+
+    snackbar.value.timeout = setTimeout(
+        () => (snackbar.value.show = false),
+        snackbar.value.timeoutLength
+    );
 }
 
 function closeDialog() {

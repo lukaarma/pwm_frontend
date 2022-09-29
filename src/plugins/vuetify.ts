@@ -8,6 +8,9 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 const vuetify = createVuetify({
     display: {
         mobileBreakpoint: 'sm',
+        thresholds: {
+            sm: 720
+        }
     },
     theme: {
         defaultTheme: 'dark',

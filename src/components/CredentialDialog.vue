@@ -8,10 +8,22 @@
     >
         <v-card>
             <v-card-title class="mt-4 text-center text-h5 font-weight-light">
+                <v-img
+                    v-show="!newMode"
+                    :src="iconUrl"
+                    :width="newMode ? 0 : 64"
+                    max-width="64"
+                    max-height="64"
+                    class="d-inline-block centerIcon"
+                >
+                    <template v-slot:placeholder>
+                        <v-icon :icon="mdiAccountBox" />
+                    </template>
+                </v-img>
                 {{ title }}
             </v-card-title>
 
-            <v-card-text>
+            <v-card-text class="pt-0">
                 <div class="toastContainer">
                     <Toast
                         class="copyAlert"
@@ -48,7 +60,7 @@
                         v-model="credential.password"
                         :readonly="!editMode"
                         :color="editMode ? 'primary' : 'default'"
-                        :prepend-inner-icon="mdiLock"
+                        :prepend-inner-icon="mdiKeyVariant"
                         :type="hidePassword ? 'password' : 'text'"
                         label="Password"
                     >
@@ -74,58 +86,16 @@
                         placeholder="https://exemple.com"
                         outlined
                         :append-inner-icon="mdiArrowTopRight"
-                        @click:appendInner.stop="win.open(credential.url, '_blank')"
+                        @click:appendInner.stop="
+                            credential.url ? win.open(credential.url, '_blank') : null
+                        "
                     />
                     <v-btn type="submit" hidden />
                 </v-form>
             </v-card-text>
 
-            <v-card-actions class="mb-2 mx-4" v-if="!$vuetify.display.mobile">
-                <v-btn v-if="!newMode" outlined color="red" @click="showDeleteDialog = true">
-                    Delete
-                </v-btn>
-
-                <v-btn
-                    outlined
-                    :loading="loadingPasswordCheck"
-                    color="primary"
-                    @click="checkPassword"
-                >
-                    <v-tooltip
-                        v-if="$vuetify.display.mdAndUp"
-                        activator="parent"
-                        location="bottom"
-                        class="text-center"
-                    >
-                        <div>Check if password was leaked from other websites</div>
-                        Check the "Tools" tab for more info
-                    </v-tooltip>
-                    Check password
-                </v-btn>
-
-                <v-spacer />
-
-                <v-btn v-if="editMode" outlined color="primary" @click="cancelChanges">
-                    Cancel
-                </v-btn>
-                <v-btn
-                    v-if="editMode"
-                    outlined
-                    color="primary"
-                    :loading="loading"
-                    @click="saveChanges(false)"
-                >
-                    Save
-                </v-btn>
-                <v-btn v-if="!editMode" outlined color="primary" @click="$emit('close')">
-                    Close
-                </v-btn>
-                <v-btn v-if="!editMode" outlined color="primary" @click="editMode = true">
-                    Edit
-                </v-btn>
-            </v-card-actions>
-
-            <v-card-actions v-else class="mb-2 mx-4">
+            <!-- MOBILE -->
+            <v-card-actions v-if="$vuetify.display.mobile" class="mb-2 mx-4">
                 <div class="d-flex flex-column align-start">
                     <v-btn
                         outlined
@@ -164,10 +134,48 @@
                     >
                         Save
                     </v-btn>
-                    <v-btn v-else@click="(editMode = true)" outlined color="primary" class="ma-0">
+                    <v-btn v-else @click="editMode = true" outlined color="primary" class="ma-0">
                         Edit
                     </v-btn>
                 </div>
+            </v-card-actions>
+
+            <!-- DESKTOP -->
+            <v-card-actions v-else class="mb-2 mx-4">
+                <v-btn :disabled="newMode" @click="showDeleteDialog = true" outlined color="red">
+                    Delete
+                </v-btn>
+
+                <v-btn
+                    outlined
+                    :loading="loadingPasswordCheck"
+                    color="primary"
+                    @click="checkPassword"
+                >
+                    <v-tooltip activator="parent" location="bottom" class="text-center">
+                        <div>Check if password was leaked from other websites</div>
+                        Check the "Tools" tab for more info
+                    </v-tooltip>
+                    Check password
+                </v-btn>
+
+                <v-spacer />
+
+                <v-btn v-if="editMode" @click="cancelChanges" outlined color="primary">
+                    Cancel
+                </v-btn>
+                <v-btn v-else @click="$emit('close')" outlined color="primary"> Close </v-btn>
+
+                <v-btn
+                    v-if="editMode"
+                    :loading="loading"
+                    @click="saveChanges(false)"
+                    outlined
+                    color="primary"
+                >
+                    Save
+                </v-btn>
+                <v-btn v-else @click="editMode = true" outlined color="primary"> Edit </v-btn>
             </v-card-actions>
         </v-card>
 
@@ -212,13 +220,17 @@ Solution: we hijack the default overlay css only on this form (thanks to the ID)
 .copyAlert {
     position: absolute;
     width: 100%;
-    transform: translate(0, -60%);
+    transform: translate(0, -70%);
+}
+
+.centerIcon {
+    vertical-align: middle;
 }
 </style>
 
 <script setup lang="ts">
 import {
-    mdiLock,
+    mdiKeyVariant,
     mdiEye,
     mdiEyeOff,
     mdiAccountBox,
@@ -243,6 +255,7 @@ const win = window;
 // Vue internals
 const props = defineProps<{
     show: boolean;
+    edit: boolean;
     index: number;
 }>();
 const emit = defineEmits<{
@@ -254,9 +267,6 @@ const vaultStore = useVaultStore();
 const index = ref(props.index);
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);
 
-let timeout: number;
-const timeoutLength = 2000;
-
 const samePasswordCount = ref(0);
 const samePasswordMax = 2;
 
@@ -264,15 +274,6 @@ const samePasswordMax = 2;
 const hidePassword = ref(true);
 const newMode = ref(props.index === -1);
 const editMode = ref(props.index === -1);
-const toastControls = ref<ToastControls>({
-    show: false,
-    msg: '',
-    type: 'info',
-});
-
-const showDeleteDialog = ref(false);
-const showOverrideDialog = ref(false);
-
 const loading = ref(false);
 const loadingPasswordCheck = ref(false);
 const persistent = computed(() => {
@@ -288,6 +289,17 @@ const persistent = computed(() => {
     );
 });
 
+const showDeleteDialog = ref(false);
+const showOverrideDialog = ref(false);
+
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: '',
+    type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
+});
+
 // form logic
 const websiteNameRules = [(name: string) => !!name || 'Website name is required'];
 
@@ -299,24 +311,30 @@ const credential = ref({
     username: '',
     password: '',
 });
+
+const iconUrl = ref('');
 const title = computed(() => {
     if (newMode.value) {
         return 'Create new Credential';
     } else if (editMode.value) {
-        return 'Edit Credential';
+        return `Edit "${credential.value.name}"`;
     } else {
-        return 'View Credential';
+        return `View "${credential.value.name}"`;
     }
 });
 
 // trigger on load to set correct values of DOM logic and data bindings
 watch(props, (newProps) => {
     resetErrors();
+
+    console.dir(newProps);
     index.value = newProps.index;
 
+    console.dir(index.value);
+
     if (newProps.show) {
-        editMode.value = index.value === -1;
-        newMode.value = editMode.value;
+        editMode.value = newProps.edit || index.value === -1;
+        newMode.value = index.value === -1;
 
         // NOTE: don't reference data[index] directly! It WILL change the store
         credential.value = {
@@ -325,6 +343,10 @@ watch(props, (newProps) => {
             username: newMode.value ? '' : vaultStore.state.credentials[index.value].username,
             password: newMode.value ? '' : vaultStore.state.credentials[index.value].password,
         };
+
+        if (!newMode.value) {
+            iconUrl.value = `https://icon.horse/icon?uri=${credential.value.url}`;
+        }
     }
 });
 
@@ -349,7 +371,7 @@ async function deleteCredential() {
 }
 
 async function checkPassword() {
-    clearTimeout(timeout);
+    clearTimeout(toastControls.value.timeout);
     loadingPasswordCheck.value = true;
 
     if (credential.value.password !== '') {
@@ -369,19 +391,19 @@ async function checkPassword() {
 
     toastControls.value.show = true;
 
-    timeout = setTimeout(() => {
+    toastControls.value.timeout = setTimeout(() => {
         toastControls.value.show = false;
-    }, timeoutLength);
+    }, toastControls.value.timeoutLength);
     // separate timeout, we don't want this loading to be resettable
     setTimeout(() => {
         loadingPasswordCheck.value = false;
-    }, timeoutLength);
+    }, toastControls.value.timeoutLength);
 }
 
 function cancelChanges() {
     resetErrors();
 
-    if (newMode.value) {
+    if (newMode.value || props.edit) {
         emit('close');
     } else {
         editMode.value = false;
@@ -473,7 +495,7 @@ function close() {
 }
 
 function copyToClipBoard(field: 'Username' | 'Password') {
-    clearTimeout(timeout);
+    clearTimeout(toastControls.value.timeout);
 
     if (editMode.value) {
         return;
@@ -497,8 +519,8 @@ function copyToClipBoard(field: 'Username' | 'Password') {
     toastControls.value.msg = field + ' copied';
     toastControls.value.show = true;
 
-    timeout = setTimeout(() => {
+    toastControls.value.timeout = setTimeout(() => {
         toastControls.value.show = false;
-    }, timeoutLength);
+    }, toastControls.value.timeoutLength);
 }
 </script>
