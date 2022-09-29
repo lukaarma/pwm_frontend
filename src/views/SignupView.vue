@@ -108,6 +108,8 @@ const toastControls = ref<ToastControls>({
     show: false,
     msg: '',
     type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
 });
 
 const router = useRouter();

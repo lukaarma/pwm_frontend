@@ -103,6 +103,8 @@ const toastControls = ref<ToastControls>({
     show: false,
     msg: '',
     type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
 });
 
 const passwordRules = [(psw: string) => !!psw || 'Password is required'];
@@ -134,35 +136,45 @@ async function deleteHandler() {
                 break;
         }
         console.log(res);
-        if (res) {
-            if (res.data && res.data.code === WEB_CODES.VAULT_DELETED) {
-                toastControls.value.show = false;
-                password.value = '';
-                emit('success');
-            } else if (res.data && res.data.code === WEB_CODES.ACCOUNT_DELETED) {
-                logout();
-            } else if (res.err) {
-                switch (res.err.code) {
-                    case WEB_CODES.WRONG_PASSWORD:
-                        toastControls.value.msg = 'Wrong password';
-                        toastControls.value.type = 'error';
-                        toastControls.value.show = true;
-                        break;
 
-                    case WEB_CODES.MISSING_VAULT:
-                        toastControls.value.msg = 'Vault not found';
-                        toastControls.value.type = 'warning';
-                        toastControls.value.show = true;
-                        break;
+        if (res && res.data) {
+            switch (res.data.code) {
+                case WEB_CODES.VAULT_DELETED:
+                    toastControls.value.show = false;
+                    password.value = '';
+                    emit('success');
+                    break;
 
-                    default:
-                        console.error(
-                            `[deleteHandler] Uncaught error code ${res.err.code} with message ${res.err.message}`
-                        );
-                        break;
-                }
+                case WEB_CODES.ACCOUNT_DELETED:
+                    logout();
+                    break;
+
+                default:
+                    console.error(
+                        `[deleteHandler] Uncaught data code ${res.data.code} with message ${res.data.message}`
+                    );
+                    break;
             }
+        } else if (res && res.err) {
+            switch (res.err.code) {
+                case WEB_CODES.WRONG_PASSWORD:
+                    toastControls.value.msg = 'Wrong password';
+                    toastControls.value.type = 'error';
+                    toastControls.value.show = true;
+                    break;
 
+                case WEB_CODES.MISSING_VAULT:
+                    toastControls.value.msg = 'Vault not found';
+                    toastControls.value.type = 'warning';
+                    toastControls.value.show = true;
+                    break;
+
+                default:
+                    console.error(
+                        `[deleteHandler] Uncaught error code ${res.err.code} with message ${res.err.message}`
+                    );
+                    break;
+            }
             loading.value = false;
         }
     });

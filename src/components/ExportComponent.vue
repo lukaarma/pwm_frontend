@@ -115,10 +115,9 @@ const toastControls = ref<ToastControls>({
     show: false,
     msg: '',
     type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
 });
-
-const timeoutLength = 2000;
-let timeout: number;
 
 async function exportVault(override = false) {
     loading.value = true;
@@ -137,7 +136,7 @@ async function exportVault(override = false) {
     }
 
     showConfirmationDialog.value = false;
-    clearTimeout(timeout);
+    clearTimeout(toastControls.value.timeout);
 
     if (override || (await exportForm.value?.validate())?.valid) {
         console.debug(`[EXPORT] exporting ${encrypted.value ? 'encrypted' : ''} vault`);
@@ -151,12 +150,12 @@ async function exportVault(override = false) {
         toastControls.value.msg = 'File created! Download should start any moment...';
         toastControls.value.show = true;
 
-        timeout = setTimeout(() => {
+        toastControls.value.timeout = setTimeout(() => {
             toastControls.value.show = false;
             if (download.value) {
                 download.value.href = '';
             }
-        }, timeoutLength);
+        }, toastControls.value.timeoutLength);
     }
 
     loading.value = false;

@@ -73,7 +73,7 @@
 
     <ConfirmationDialog
         :show="showConfirmChoice"
-        :msg="`Are you sure you want to delete your ${deleteSelection}? The operation cannot be undone`"
+        :msg="`Are you sure you want to delete your ${deleteSelection}?\nThe operation cannot be undone`"
         :title="`Delete ${deleteSelection}`"
         @no="
             showConfirmChoice = false;
@@ -136,6 +136,8 @@ const toastControls = ref<ToastControls>({
     show: false,
     msg: '',
     type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
 });
 
 const userInfo = ref({
@@ -156,12 +158,8 @@ const lastNameRules = [
         !!nameRegex.test(lastName.trim()) || 'Last name contain an invalid character!',
 ];
 
-// timeout
-const timeoutLength = 2000;
-let timeout: number;
-
 async function doSubmit() {
-    clearTimeout(timeout);
+    clearTimeout(toastControls.value.timeout);
     loading.value.save = true;
 
     const validation = await form.value?.validate();
@@ -184,7 +182,10 @@ async function doSubmit() {
         if (res.ok) {
             toastControls.value.msg = res.data.message;
             toastControls.value.type = 'success';
-            timeout = setTimeout(() => (toastControls.value.show = false), timeoutLength);
+            toastControls.value.timeout = setTimeout(
+                () => (toastControls.value.show = false),
+                toastControls.value.timeoutLength
+            );
         } else {
             console.error(`[PROFILE VIEW] Api error: [${res.err.code}] '${res.err.message}'`);
             toastControls.value.msg = res.err.message;
@@ -218,11 +219,14 @@ function reset(success: boolean) {
     if (success) {
         switch (deleteSelection.value) {
             case DELETE_SELECTION.VAULT:
-                clearTimeout(timeout);
+                clearTimeout(toastControls.value.timeout);
                 toastControls.value.show = true;
                 toastControls.value.msg = 'Vault deleted!';
                 toastControls.value.type = 'success';
-                timeout = setTimeout(() => (toastControls.value.show = false), timeoutLength);
+                toastControls.value.timeout = setTimeout(
+                    () => (toastControls.value.show = false),
+                    toastControls.value.timeoutLength
+                );
                 break;
 
             case DELETE_SELECTION.ACCOUNT:

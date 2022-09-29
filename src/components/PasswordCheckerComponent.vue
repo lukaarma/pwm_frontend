@@ -97,6 +97,8 @@ const toastControls = ref<ToastControls>({
     show: false,
     msg: '',
     type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
 });
 
 // rules
@@ -105,8 +107,6 @@ const passwordRules = [(psw: string) => !!psw || 'Password is required'];
 // constants
 const matches = ref(-1);
 const APITimeoutLength = 1500;
-const timeoutLength = 2000;
-let timeout: number;
 
 async function check() {
     loading.value = true;
@@ -131,13 +131,16 @@ async function check() {
             loading.value = false;
         }, APITimeoutLength);
     } else {
-        clearTimeout(timeout);
+        clearTimeout(toastControls.value.timeout);
 
         toastControls.value.type = 'error';
         toastControls.value.msg = 'Please insert a password';
         toastControls.value.show = true;
 
-        timeout = setTimeout(() => (toastControls.value.show = false), timeoutLength);
+        toastControls.value.timeout = setTimeout(
+            () => (toastControls.value.show = false),
+            toastControls.value.timeoutLength
+        );
         loading.value = false;
     }
 }

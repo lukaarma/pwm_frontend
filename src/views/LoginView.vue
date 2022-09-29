@@ -61,6 +61,8 @@ const toastControls = ref<ToastControls>({
     show: false,
     msg: '',
     type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
 });
 const hidePassword = ref(true);
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);

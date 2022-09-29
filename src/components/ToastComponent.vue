@@ -16,6 +16,8 @@ export type ToastControls = {
     show: boolean;
     msg: string;
     type: 'success' | 'error' | 'warning' | 'info';
+    timeout: undefined | number;
+    timeoutLength: number;
 };
 
 defineProps<{

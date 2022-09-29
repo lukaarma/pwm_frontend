@@ -70,15 +70,14 @@ import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import { importNativeJSON, importBitwardenJSON } from '@/services/importVault';
 import { sendVault } from '@/services/vault';
 
-// internal logic
-const importForm = ref<InstanceType<typeof vuetify.VForm> | null>(null);
-const timeoutLength = 2000;
-let timeout: number;
 enum Providers {
     PWM_ENCRYPTED = 'PWM (Encrypted JSON)',
     PWM = 'PWM (JSON)',
     BITWARDEN = 'BitWarden (JSON)',
 }
+
+// internal logic
+const importForm = ref<InstanceType<typeof vuetify.VForm> | null>(null);
 
 // DOM content
 const availableProviders = [Providers.PWM_ENCRYPTED, Providers.PWM, Providers.BITWARDEN];
@@ -97,6 +96,8 @@ const toastControls = ref<ToastControls>({
     show: false,
     msg: '',
     type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
 });
 
 // rules
@@ -109,7 +110,7 @@ const inputFilesRules = [
 async function importFile() {
     loading.value = true;
     toastControls.value.show = false;
-    clearTimeout(timeout);
+    clearTimeout(toastControls.value.timeout);
 
     if ((await importForm.value?.validate())?.valid) {
         console.debug('[IMPORT] Starting import sequence...');
@@ -137,7 +138,10 @@ async function importFile() {
                     'Import successful, please check the vault tab to find your new credentials';
                 toastControls.value.show = true;
 
-                timeout = setTimeout(() => (toastControls.value.show = false), timeoutLength);
+                toastControls.value.timeout = setTimeout(
+                    () => (toastControls.value.show = false),
+                    toastControls.value.timeoutLength
+                );
             } else {
                 console.debug(`[CREDENTIAL] Save failed: [${res.err.code}] ${res.err.message}`);
                 toastControls.value.type = 'info';
