@@ -3,7 +3,6 @@
         <v-card-title class="text-center text-h4 mt-2 mb-4 font-weight-light">
             Import Vault
         </v-card-title>
-
         <v-card-text class="text-center">
             <p>Use this tool to import your credential from other services</p>
         </v-card-text>
@@ -63,7 +62,7 @@
 
 <script setup lang="ts">
 import { mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
@@ -107,6 +106,10 @@ const inputFilesRules = [
         inputFiles[0].name.toLowerCase().endsWith('.json') || 'File must be JSON formatted',
 ];
 
+watch(selectedProvider, () => {
+    password.value = '';
+});
+
 async function importFile() {
     loading.value = true;
     toastControls.value.show = false;
@@ -116,15 +119,19 @@ async function importFile() {
         console.debug('[IMPORT] Starting import sequence...');
 
         try {
-            if (
-                selectedProvider.value === Providers.PWM_ENCRYPTED ||
-                selectedProvider.value === Providers.PWM
-            ) {
-                await importNativeJSON(inputFiles.value[0], password.value);
-            } else if (selectedProvider.value === Providers.BITWARDEN) {
-                await importBitwardenJSON(inputFiles.value[0]);
-            } else {
-                console.error(`[IMPORT] Invalid provider '${selectedProvider.value}' selected!`);
+            switch (selectedProvider.value) {
+                case Providers.PWM_ENCRYPTED:
+                    await importNativeJSON(inputFiles.value[0], password.value, true);
+                    break;
+                case Providers.PWM:
+                    await importNativeJSON(inputFiles.value[0], password.value, false );
+                    break;
+                case Providers.BITWARDEN:
+                    await importBitwardenJSON(inputFiles.value[0]);
+                    break;
+                default:
+                    console.error(`[IMPORT] Invalid provider '${selectedProvider.value}' selected!`);
+                    break
             }
 
             console.debug('[IMPORT] Local import successful');

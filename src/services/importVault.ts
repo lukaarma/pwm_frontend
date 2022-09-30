@@ -4,7 +4,7 @@ import { JSONDateParser } from '@/services/utils';
 import { type Credential, vaultStore, VAULT_M } from '@/stores/vaultStore';
 import { urlProtocolRegex } from '@/services/utils';
 
-export async function importNativeJSON(file: File, password: string) {
+export async function importNativeJSON(file: File, password: string, encryptedSelection: boolean) {
     let parsedImport;
     let credentials: Array<Credential>;
     console.debug('[IMPORT_NATIVE] Importing PWM JSON file format');
@@ -13,7 +13,7 @@ export async function importNativeJSON(file: File, password: string) {
     try {
         parsedImport = JSON.parse(await file.text(), JSONDateParser);
     } catch (_) {
-        throw new Error('Invalid JSON file! Please check that you have the correct file selected!');
+        throw new Error('Invalid JSON file! \nPlease check that you have the correct file selected!');
     }
 
     // if valid JSON check for valid PWM format
@@ -21,16 +21,26 @@ export async function importNativeJSON(file: File, password: string) {
         console.debug('[IMPORT_NATIVE] Valid ExportedPWMVault provided');
 
         // if encrypted decrypt
-        if (parsedImport.encrypted) {
-            console.debug('[IMPORT_NATIVE] Decrypting vault');
-            credentials = await decryptExportedVault(
-                password,
-                parsedImport.exportDate.toUTCString(),
-                parsedImport.IV,
-                parsedImport.data
-            );
+        if (encryptedSelection) {
+            if (parsedImport.encrypted) {
+                console.debug('[IMPORT_NATIVE] Decrypting vault');
+                credentials = await decryptExportedVault(
+                    password,
+                    parsedImport.exportDate.toUTCString(),
+                    parsedImport.IV,
+                    parsedImport.data
+                );
+            } else {
+                throw new Error('The JSON file was not encrypted! Please select a correct file or a correct provider');
+            }
         } else {
-            credentials = parsedImport.credentials;
+            if (!parsedImport.encrypted) {
+                credentials = parsedImport.credentials;
+            } else {
+                throw new Error(
+                    'The JSON file was encrypted! Please select a correct file or a correct provider'
+                );
+            }
         }
 
         credentials.forEach((cred) => {

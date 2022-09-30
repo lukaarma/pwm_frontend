@@ -1,6 +1,6 @@
 <template>
     <v-slide-y-reverse-transition v-show="show" duration="300">
-        <v-alert :type="type" closable density="compact">
+        <v-alert :type="type" closable density="compact" class="breakNewline">
             <template v-slot:close>
                 <v-btn @click="$emit('close')" :icon="mdiClose"></v-btn>
             </template>

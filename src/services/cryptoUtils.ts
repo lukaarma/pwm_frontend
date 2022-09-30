@@ -120,6 +120,8 @@ export async function decryptVault(encryptedVault: VaultBody): Promise<boolean> 
                 return new Uint8Array(0);
             });
 
+        console.debug('[decryptVault] Vault decrypted');
+
         try {
             vaultStore.commit(VAULT_M.SET_VAULT, {
                 credentials: JSON.parse(decoder.decode(decryptedData)),
@@ -154,6 +156,8 @@ export async function encryptVault(): Promise<VaultBody | null> {
 
                 return new Uint8Array(0);
             });
+
+        console.debug('[encryptVault] Vault encrypted');
 
         return {
             version: vaultStore.state.version,
