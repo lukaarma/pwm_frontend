@@ -29,7 +29,7 @@
     </v-card>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 .tabs {
     background-color: rgb(var(--v-theme-background));
 }

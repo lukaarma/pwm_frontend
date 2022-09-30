@@ -59,23 +59,29 @@ export const vaultStore = createStore<VaultStore>({
         credentials: [],
     },
     getters: {
-        getCredentials: (state) => (filter: string) => {
-            if (filter === '') {
-                return [...state.credentials.keys()];
-            }
-
+        getCredentials: (state) => (filter: string, page: number, itemsPerPage: number) => {
+            let filtered: Array<number>;
             filter = filter.toLowerCase();
 
-            return state.credentials.reduce((result, cred, index) => {
-                if (
-                    cred.name.toLowerCase().match(filter) ||
-                    cred.username.toLowerCase().match(filter)
-                ) {
-                    result.push(index);
-                }
+            if (filter === '') {
+                filtered = [...state.credentials.keys()];
+            } else {
+                filtered = state.credentials.reduce((result, cred, index) => {
+                    if (
+                        cred.name.toLowerCase().match(filter) ||
+                        cred.username.toLowerCase().match(filter)
+                    ) {
+                        result.push(index);
+                    }
 
-                return result;
-            }, [] as Array<number>);
+                    return result;
+                }, [] as Array<number>);
+            }
+
+            return {
+                list: filtered.slice(itemsPerPage * (page - 1), itemsPerPage * page),
+                pageCount: Math.ceil(filtered.length / itemsPerPage) || 1,
+            };
         },
     },
     mutations: {

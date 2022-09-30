@@ -1,6 +1,6 @@
 <!-- TODO: Hide y overflow -->
 <template>
-    <v-card elevation="3">
+    <v-card elevation="3" class="fixedHeightCard">
         <v-container>
             <v-row no-gutters class="flex-nowrap fixedHeightRow">
                 <v-img
@@ -138,10 +138,14 @@
     transform: translate(50%, 50%);
 }
 
+$row-height: 100px;
+.fixedHeightCard {
+    max-height: $row-height;
+}
 // NOTE: fix for bad CSS, row height not locked between 600px and 960px
 .fixedHeightRow {
-    // max-height of card - 56px of padding
-    max-height: calc(v-bind('rowHeight') - 56px);
+    // max-height of card - 32px of padding
+    max-height: calc($row-height - 32px);
 }
 </style>
 
@@ -160,7 +164,6 @@ import { useVaultStore } from '@/stores/vaultStore';
 
 const props = defineProps<{
     index: number;
-    rowHeight: number;
 }>();
 
 const emit = defineEmits<{
@@ -172,7 +175,6 @@ const emit = defineEmits<{
 const win = window;
 
 const vaultStore = useVaultStore();
-const rowHeight = props.rowHeight + 'px';
 
 const credential = computed(() => vaultStore.state.credentials[props.index]);
 

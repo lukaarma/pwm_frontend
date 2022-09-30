@@ -326,11 +326,7 @@ const title = computed(() => {
 // trigger on load to set correct values of DOM logic and data bindings
 watch(props, (newProps) => {
     resetErrors();
-
-    console.dir(newProps);
     index.value = newProps.index;
-
-    console.dir(index.value);
 
     if (newProps.show) {
         editMode.value = newProps.edit || index.value === -1;
@@ -360,10 +356,10 @@ async function deleteCredential() {
 
     if (res.ok) {
         // if cloud save ok, and new mode close prompt
-        console.debug('[CREDENTIAL] Deletion success');
+        console.debug('[CREDENTIAL_DELETE] Deletion success');
         emit('close');
     } else {
-        console.debug(`[CREDENTIAL] Deletion failed: [${res.err.code}] ${res.err.message}`);
+        console.debug(`[CREDENTIAL_DELETE] Deletion failed: [${res.err.code}] ${res.err.message}`);
         toastControls.value.type = 'error';
         toastControls.value.show = true;
         toastControls.value.msg = res.err.message;

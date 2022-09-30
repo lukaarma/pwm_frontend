@@ -39,7 +39,20 @@
             </v-col>
         </v-row>
 
-        <v-row v-show="credentials.length === 0" class="mt-8">
+        <v-row>
+            <v-col>
+                <v-pagination
+                    v-show="credentials.pageCount > 1"
+                    v-model="page"
+                    show-first-last-page
+                    :length="credentials.pageCount"
+                    rounded="circle"
+                    class="w-75 ma-auto"
+                />
+            </v-col>
+        </v-row>
+
+        <v-row v-show="credentials.list.length === 0" class="mt-8">
             <v-col>
                 <h2 class="text-center font-weight-light">
                     {{
@@ -51,14 +64,26 @@
             </v-col>
         </v-row>
 
-        <v-row v-for="index of credentials" :key="index">
+        <v-row v-for="index of credentials.list" :key="index">
             <v-col>
                 <Credential
                     :index="index"
-                    :rowHeight="rowHeight"
                     @click="openDialog(index)"
                     @openEditDialog="openDialog(index, true)"
                     @openSnackbar="openSnackbar"
+                />
+            </v-col>
+        </v-row>
+
+        <v-row>
+            <v-col>
+                <v-pagination
+                    v-show="credentials.pageCount > 1"
+                    v-model="page"
+                    show-first-last-page
+                    :length="credentials.pageCount"
+                    rounded="circle"
+                    class="w-75 ma-auto"
                 />
             </v-col>
         </v-row>
@@ -84,23 +109,18 @@
 
 <script setup lang="ts">
 import { mdiPlus, mdiMagnify } from '@mdi/js';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import Credential from '@/components/CredentialComponent.vue';
 import CredentialDialog from '@/components/CredentialDialog.vue';
 import { useVaultStore } from '@/stores/vaultStore';
 
 const vaultStore = useVaultStore();
-const rowHeight = 124;
-
-const credentialsFilter = ref('');
-const credentials = computed<Array<number>>(() =>
-    vaultStore.getters.getCredentials(credentialsFilter.value)
-);
 
 const showDialog = ref(false);
 const editDialog = ref(false);
 const showIndex = ref(-1);
+const page = ref(1);
 
 const snackbar = ref<{
     show: boolean;
@@ -113,6 +133,20 @@ const snackbar = ref<{
     timeout: undefined,
     timeoutLength: 2000,
 });
+
+const credentialsFilter = ref('');
+const itemsPerPage = 10;
+
+const credentials = computed<{ list: Array<number>; pageCount: number }>(() =>
+    vaultStore.getters.getCredentials(credentialsFilter.value, page.value, itemsPerPage)
+);
+
+watch(
+    () => credentials.value.pageCount,
+    (pageCount) => {
+        page.value = Math.min(page.value, pageCount);
+    }
+);
 
 function openDialog(i: number, edit = false) {
     console.debug(`[VAULT] Opening dialog with index ${i}`);
