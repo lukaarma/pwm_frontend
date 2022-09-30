@@ -76,11 +76,13 @@ import { mdiLock, mdiEyeOff, mdiEye } from '@mdi/js';
 import { ref } from 'vue';
 
 import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
-import cryptoUtils, { deriveMKeMPH } from '@/services/cryptoUtils';
 import API from '@/services/API';
+import cryptoUtils, { deriveMKeMPH } from '@/services/cryptoUtils';
+import { logout } from '@/services/utils';
+import { localStorageVaultKey } from '@/services/vault';
+import { localStorageConfigKey } from '@/stores/configStore';
 import { useUserStore } from '@/stores/userStore';
 import { DELETE_SELECTION, WEB_CODES, type APIResponse } from '@/types';
-import { logout } from '@/services/utils';
 
 const props = defineProps<{
     show: boolean;
@@ -121,7 +123,6 @@ async function deleteHandler() {
 
         switch (props.deleteSelection) {
             case DELETE_SELECTION.VAULT:
-                console.log(masterPasswordHash);
                 res = await API.deleteVault(masterPasswordHash);
                 break;
 
@@ -142,10 +143,13 @@ async function deleteHandler() {
                 case WEB_CODES.VAULT_DELETED:
                     toastControls.value.show = false;
                     password.value = '';
+                    localStorage.removeItem(localStorageVaultKey);
                     emit('success');
                     break;
 
                 case WEB_CODES.ACCOUNT_DELETED:
+                    localStorage.removeItem(localStorageVaultKey);
+                    localStorage.removeItem(localStorageConfigKey);
                     logout();
                     break;
 

@@ -6,7 +6,7 @@ type ConfigStore = {
     darkMode: boolean;
 };
 
-const localStorageKey = 'PWMConfig';
+export const localStorageConfigKey = 'PWMConfig';
 // define injection key
 export const configKey: InjectionKey<Store<ConfigStore>> = Symbol();
 
@@ -19,13 +19,13 @@ export const configStore = createStore<ConfigStore>({
 
         console.log('[CONFIG] Loading initial config from local storage');
 
-        const stored = JSON.parse(localStorage.getItem(localStorageKey) || 'null');
+        const stored = JSON.parse(localStorage.getItem(localStorageConfigKey) || 'null');
 
         if (stored && typeof stored.darkMode === 'boolean') {
             config.darkMode = stored.darkMode;
         }
 
-        localStorage.setItem('darkMode', JSON.stringify(config.darkMode));
+        localStorage.setItem('PWMConfig', JSON.stringify(config));
 
         console.log('[CONFIG] Saving initial config to local storage');
 
@@ -40,7 +40,7 @@ export const configStore = createStore<ConfigStore>({
 
 configStore.subscribe((_, state) => {
     console.log('[CONFIG] Config changed, saving to local storage');
-    localStorage.setItem(localStorageKey, JSON.stringify(state));
+    localStorage.setItem(localStorageConfigKey, JSON.stringify(state));
 });
 
 export function useConfigStore() {

@@ -1,13 +1,19 @@
 import API from './API';
 import { encryptVault, decryptVault } from './cryptoUtils';
+import { JSONDateParser } from '@/services/utils';
 import { VAULT_M, vaultStore, type VaultStore } from '@/stores/vaultStore';
-import type { Result, VaultBody } from '@/types';
 import { WEB_CODES } from '@/types';
+import type { Result, VaultBody } from '@/types';
+
+export const localStorageVaultKey = 'vault';
 
 // TODO: if vault in local storage send to backend
 export async function getVault(): Promise<Result> {
     // if vault in local storage is not like our Vault set null
-    const localVault: VaultBody | null = JSON.parse(localStorage.getItem('vault') || 'null');
+    const localVault: VaultBody | null = JSON.parse(
+        localStorage.getItem(localStorageVaultKey) || 'null',
+        JSONDateParser
+    );
     if (
         localVault &&
         localVault.version &&
@@ -20,6 +26,8 @@ export async function getVault(): Promise<Result> {
         typeof localVault.data === 'string'
     ) {
         console.debug('[getVault] found local vault, synchronizing with server');
+        await decryptVault(localVault);
+
         const res = await API.sendVault(localVault, false);
 
         // if cannot send vault, display error and retry button
@@ -34,7 +42,7 @@ export async function getVault(): Promise<Result> {
             };
         } else {
             console.debug('[getVault] Synchronized, deleting local vault');
-            localStorage.removeItem('vault');
+            localStorage.removeItem(localStorageVaultKey);
         }
     }
 
@@ -59,7 +67,6 @@ export async function getVault(): Promise<Result> {
 
     console.debug('[getVault] Got vault from server, decrypting');
     if (await decryptVault(res.data)) {
-
         return {
             ok: true,
             data: {
@@ -88,16 +95,15 @@ export async function sendVault(createNew = false): Promise<Result> {
 
         // save item before API call
         console.debug('[sendVault] Vault encrypted, saving in local storage');
-        localStorage.setItem('vault', JSON.stringify(vault));
+        localStorage.setItem(localStorageVaultKey, JSON.stringify(vault));
 
         console.debug('[sendVault] Vault saved, sending to database');
         if (vault) {
             const res = await API.sendVault(vault, createNew);
 
-
             if (res.data) {
                 console.debug('[sendVault] Vault sent to database');
-                localStorage.removeItem('vault');
+                localStorage.removeItem(localStorageVaultKey);
 
                 return {
                     ok: true,

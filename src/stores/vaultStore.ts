@@ -122,6 +122,8 @@ export const vaultStore = createStore<VaultStore>({
             window.crypto.getRandomValues(state.IV);
         },
         setVault(state, newVault: Partial<VaultStore>) {
+            console.debug('[setVault] Setting Vault info');
+
             state.version = newVault.version ?? state.version;
             state.lastModified = newVault.lastModified ?? state.lastModified;
             state.IV = newVault.IV ?? state.IV;

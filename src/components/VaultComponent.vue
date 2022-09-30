@@ -44,10 +44,10 @@
                 <v-pagination
                     v-show="credentials.pageCount > 1"
                     v-model="page"
-                    show-first-last-page
+                    :show-first-last-page="!$vuetify.display.mobile"
                     :length="credentials.pageCount"
                     rounded="circle"
-                    class="w-75 ma-auto"
+                    :class="{ 'w-75 mx-auto': !$vuetify.display.mobile }"
                 />
             </v-col>
         </v-row>
@@ -83,7 +83,8 @@
                     show-first-last-page
                     :length="credentials.pageCount"
                     rounded="circle"
-                    class="w-75 ma-auto"
+                    class="ma-auto"
+                    :class="{ 'w-75 mx-auto': !$vuetify.display.mobile }"
                 />
             </v-col>
         </v-row>
