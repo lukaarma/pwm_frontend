@@ -4,7 +4,7 @@
             <v-col
                 :cols="$vuetify.display.mobile ? 12 : 6"
                 :offset="$vuetify.display.mobile ? 0 : 3"
-                class="pt-0"
+                class="pt-W0"
             >
                 <v-btn
                     color="primary"
@@ -27,7 +27,7 @@
         </v-row>
 
         <v-row>
-            <v-col>
+            <v-col cols="10">
                 <v-text-field
                     v-model="credentialsFilter"
                     label="Search credentials"
@@ -37,6 +37,14 @@
                     clearable
                 />
             </v-col>
+            <v-col cols="2">
+                <v-select
+                    :model-value="configStore.state.itemsPerPage"
+                    @update:model-value="setItemsPerPage"
+                    :items="itemsPerPageChoices"
+                    label="Items per page"
+                />
+            </v-col>
         </v-row>
 
         <v-row>
@@ -44,9 +52,9 @@
                 <v-pagination
                     v-show="credentials.pageCount > 1"
                     v-model="page"
-                    :show-first-last-page="!$vuetify.display.mobile"
                     :length="credentials.pageCount"
                     rounded="circle"
+                    class="ma-auto"
                     :class="{ 'w-75 mx-auto': !$vuetify.display.mobile }"
                 />
             </v-col>
@@ -74,13 +82,12 @@
                 />
             </v-col>
         </v-row>
-
         <v-row>
             <v-col>
                 <v-pagination
+                    ref="bottomPagination"
                     v-show="credentials.pageCount > 1"
                     v-model="page"
-                    show-first-last-page
                     :length="credentials.pageCount"
                     rounded="circle"
                     class="ma-auto"
@@ -94,7 +101,7 @@
         :show="showDialog"
         :edit="editDialog"
         :index="showIndex"
-        @close="closeDialog"
+        @close="showDialog = false"
     />
 
     <v-snackbar v-model="snackbar.show" color="primary" elevation="24">
@@ -102,7 +109,7 @@
     </v-snackbar>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
 .vault {
     max-width: 900px;
 }
@@ -115,8 +122,10 @@ import { computed, ref, watch } from 'vue';
 import Credential from '@/components/CredentialComponent.vue';
 import CredentialDialog from '@/components/CredentialDialog.vue';
 import { useVaultStore } from '@/stores/vaultStore';
+import { useConfigStore } from '@/stores/configStore';
 
 const vaultStore = useVaultStore();
+const configStore = useConfigStore();
 
 const showDialog = ref(false);
 const editDialog = ref(false);
@@ -136,10 +145,14 @@ const snackbar = ref<{
 });
 
 const credentialsFilter = ref('');
-const itemsPerPage = 10;
+const itemsPerPageChoices = [15, 25, 50];
 
 const credentials = computed<{ list: Array<number>; pageCount: number }>(() =>
-    vaultStore.getters.getCredentials(credentialsFilter.value, page.value, itemsPerPage)
+    vaultStore.getters.getCredentials(
+        credentialsFilter.value,
+        page.value,
+        configStore.state.itemsPerPage
+    )
 );
 
 watch(
@@ -148,6 +161,10 @@ watch(
         page.value = Math.min(page.value, pageCount);
     }
 );
+
+function setItemsPerPage(newValue: number) {
+    configStore.commit('setItemsPerPage', newValue);
+}
 
 function openDialog(i: number, edit = false) {
     console.debug(`[VAULT] Opening dialog with index ${i}`);
@@ -166,9 +183,5 @@ function openSnackbar(msg: string) {
         () => (snackbar.value.show = false),
         snackbar.value.timeoutLength
     );
-}
-
-function closeDialog() {
-    showDialog.value = false;
 }
 </script>

@@ -4,6 +4,7 @@ import { createStore, Store, useStore as baseUseStore } from 'vuex';
 // define your typings for the store state
 type ConfigStore = {
     darkMode: boolean;
+    itemsPerPage: number
 };
 
 export const localStorageConfigKey = 'PWMConfig';
@@ -15,14 +16,19 @@ export const configStore = createStore<ConfigStore>({
     state() {
         const config: ConfigStore = {
             darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+            itemsPerPage: 25
         };
 
         console.log('[CONFIG] Loading initial config from local storage');
 
         const stored = JSON.parse(localStorage.getItem(localStorageConfigKey) || 'null');
-
-        if (stored && typeof stored.darkMode === 'boolean') {
-            config.darkMode = stored.darkMode;
+        if (stored) {
+            if (typeof stored.darkMode === 'boolean') {
+                config.darkMode = stored.darkMode;
+            }
+            if (typeof stored.itemsPerPage === 'number') {
+                config.itemsPerPage = stored.itemsPerPage
+            }
         }
 
         localStorage.setItem('PWMConfig', JSON.stringify(config));
@@ -35,6 +41,9 @@ export const configStore = createStore<ConfigStore>({
         toggleDarkMode(state) {
             state.darkMode = !state.darkMode;
         },
+        setItemsPerPage(state, itemsPerPage: number) {
+            state.itemsPerPage = itemsPerPage
+        }
     },
 });
 
