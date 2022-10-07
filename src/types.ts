@@ -118,6 +118,7 @@ export enum WEB_CODES {
     FAIL_VAULT_ENCRYPT,
     INVALID_API_CALL,
     SERVER_UNREACHABLE,
+    VAULT_IMPORT_ERROR
 }
 
 /* ===== Vault export/import types ===== */
@@ -216,4 +217,10 @@ function isBitWardenCredential(credential: any): credential is BitWardenCredenti
 export enum DELETE_SELECTION {
     VAULT = 'Vault',
     ACCOUNT = 'Account',
+}
+
+export enum PROVIDERS {
+    PWM_ENCRYPTED = 'PWM (Encrypted JSON)',
+    PWM = 'PWM (JSON)',
+    BITWARDEN = 'BitWarden (JSON)',
 }

@@ -66,25 +66,19 @@ import { computed, ref, watch } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
-import { importNativeJSON, importBitwardenJSON } from '@/services/importVault';
-import { sendVault } from '@/services/vault';
-
-enum Providers {
-    PWM_ENCRYPTED = 'PWM (Encrypted JSON)',
-    PWM = 'PWM (JSON)',
-    BITWARDEN = 'BitWarden (JSON)',
-}
+import { importVault } from '@/services/importVault';
+import { PROVIDERS } from '@/types';
 
 // internal logic
 const importForm = ref<InstanceType<typeof vuetify.VForm> | null>(null);
 
 // DOM content
-const availableProviders = [Providers.PWM_ENCRYPTED, Providers.PWM, Providers.BITWARDEN];
-const selectedProvider = ref(Providers.PWM_ENCRYPTED);
+const availableProviders = [PROVIDERS.PWM_ENCRYPTED, PROVIDERS.PWM, PROVIDERS.BITWARDEN];
+const selectedProvider = ref(PROVIDERS.PWM_ENCRYPTED);
 const inputFiles = ref<File[]>([]);
 const acceptedMIME = 'application/json';
 
-const encrypted = computed(() => selectedProvider.value === Providers.PWM_ENCRYPTED);
+const encrypted = computed(() => selectedProvider.value === PROVIDERS.PWM_ENCRYPTED);
 const password = ref('');
 const passwordRules = [(psw: string) => !!psw || 'Password is required'];
 const hidePassword = ref(true);
@@ -118,49 +112,24 @@ async function importFile() {
     if ((await importForm.value?.validate())?.valid) {
         console.debug('[IMPORT] Starting import sequence...');
 
-        try {
-            switch (selectedProvider.value) {
-                case Providers.PWM_ENCRYPTED:
-                    await importNativeJSON(inputFiles.value[0], password.value, true);
-                    break;
-                case Providers.PWM:
-                    await importNativeJSON(inputFiles.value[0], password.value, false );
-                    break;
-                case Providers.BITWARDEN:
-                    await importBitwardenJSON(inputFiles.value[0]);
-                    break;
-                default:
-                    console.error(`[IMPORT] Invalid provider '${selectedProvider.value}' selected!`);
-                    break
-            }
+        const res = await importVault(selectedProvider.value, inputFiles.value[0], password.value);
 
-            console.debug('[IMPORT] Local import successful');
-            // then send to backend
-            const res = await sendVault();
+        if (res.ok) {
+            console.debug('[IMPORT] Save successful');
+            toastControls.value.type = 'success';
+            toastControls.value.msg =
+                'Import successful, please check the vault tab to find your new credentials';
+            toastControls.value.show = true;
 
-            if (res.ok) {
-                console.debug('[IMPORT] Save successful');
-                toastControls.value.type = 'success';
-                toastControls.value.msg =
-                    'Import successful, please check the vault tab to find your new credentials';
-                toastControls.value.show = true;
-
-                toastControls.value.timeout = setTimeout(
-                    () => (toastControls.value.show = false),
-                    toastControls.value.timeoutLength
-                );
-            } else {
-                console.debug(`[CREDENTIAL] Save failed: [${res.err.code}] ${res.err.message}`);
-                toastControls.value.type = 'info';
-                toastControls.value.msg = res.err.message;
-                toastControls.value.show = true;
-            }
-        } catch (err) {
-            if (err instanceof Error) {
-                toastControls.value.type = 'error';
-                toastControls.value.msg = err.message;
-                toastControls.value.show = true;
-            }
+            toastControls.value.timeout = setTimeout(
+                () => (toastControls.value.show = false),
+                toastControls.value.timeoutLength
+            );
+        } else {
+            console.debug(`[CREDENTIAL] Save failed: [${res.err.code}] ${res.err.message}`);
+            toastControls.value.type = 'error';
+            toastControls.value.msg = res.err.message;
+            toastControls.value.show = true;
         }
     }
 
@@ -170,7 +139,7 @@ async function importFile() {
 // FIXME: on clear remove file but don't clear validation errors
 function clear() {
     inputFiles.value = [];
-    selectedProvider.value = Providers.PWM;
+    selectedProvider.value = PROVIDERS.PWM;
     importForm.value?.resetValidation();
 }
 </script>

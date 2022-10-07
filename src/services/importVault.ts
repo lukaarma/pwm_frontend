@@ -1,8 +1,80 @@
-import { isExportedBitWardenVault, isExportedPWMVault } from '@/types';
 import { decryptExportedVault } from '@/services/cryptoUtils';
-import { JSONDateParser } from '@/services/utils';
+import { JSONDateParser, urlProtocolRegex } from '@/services/utils';
+import { sendVault } from '@/services/vault';
 import { type Credential, vaultStore, VAULT_M } from '@/stores/vaultStore';
-import { urlProtocolRegex } from '@/services/utils';
+import {
+    isExportedBitWardenVault,
+    isExportedPWMVault,
+    PROVIDERS,
+    WEB_CODES,
+    type Result,
+    type WebMessage,
+} from '@/types';
+
+export async function importVault(
+    selectedProvider: PROVIDERS,
+    file: File,
+    password: string
+): Promise<Result<WebMessage>> {
+    // save a copy of the vault as-is, enabling restore if import is too big
+    const credentials = [...vaultStore.state.credentials];
+
+    try {
+        switch (selectedProvider) {
+            case PROVIDERS.PWM_ENCRYPTED:
+                await importNativeJSON(file, password, true);
+                break;
+
+            case PROVIDERS.PWM:
+                await importNativeJSON(file, password, false);
+                break;
+
+            case PROVIDERS.BITWARDEN:
+                await importBitwardenJSON(file);
+                break;
+
+            default:
+                console.error(`[importVault] Invalid provider '${selectedProvider}' selected!`);
+                break;
+        }
+
+        console.debug('[importVault] Local import successful, sending vault');
+        // then send to backend
+        const res = await sendVault();
+
+        if (!res.ok && res.err.code === WEB_CODES.JSON_PAYLOAD_TOO_LARGE) {
+            console.debug('[importVault] Import size too large! Restoring old vault');
+            vaultStore.commit(VAULT_M.SET_VAULT, { credentials: credentials });
+
+            res.err.message = 'Vault import failed, selected file is too big!';
+        }
+
+        return res;
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error(`[importVault] Caught error! '${err.name}'`);
+
+            return {
+                ok: false,
+                err: {
+                    code: WEB_CODES.VAULT_IMPORT_ERROR,
+                    message: err.message,
+                },
+            };
+        }
+
+        console.error(`[importVault] Caught something!`);
+        console.error(err);
+
+        return {
+            ok: false,
+            err: {
+                code: WEB_CODES.VAULT_IMPORT_ERROR,
+                message: 'Unexpected error during import, please contact supportF',
+            },
+        };
+    }
+}
 
 export async function importNativeJSON(file: File, password: string, encryptedSelection: boolean) {
     let parsedImport;
@@ -13,7 +85,9 @@ export async function importNativeJSON(file: File, password: string, encryptedSe
     try {
         parsedImport = JSON.parse(await file.text(), JSONDateParser);
     } catch (_) {
-        throw new Error('Invalid JSON file! \nPlease check that you have the correct file selected!');
+        throw new Error(
+            'Invalid JSON file! \nPlease check that you have the correct file selected!'
+        );
     }
 
     // if valid JSON check for valid PWM format
@@ -31,7 +105,9 @@ export async function importNativeJSON(file: File, password: string, encryptedSe
                     parsedImport.data
                 );
             } else {
-                throw new Error('The JSON file was not encrypted! Please select a correct file or a correct provider');
+                throw new Error(
+                    'The JSON file was not encrypted! Please select a correct file or a correct provider'
+                );
             }
         } else {
             if (!parsedImport.encrypted) {
