@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 import { mdiLock, mdiEyeOff, mdiEye } from '@mdi/js';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import API from '@/services/API';
@@ -94,8 +94,11 @@ const emit = defineEmits<{
 }>();
 const userStore = useUserStore();
 
-const msg = `Please confirm your Master Password to delete your ${props.deleteSelection}.\nThis operation cannot be undone.`;
-const title = `Delete ${props.deleteSelection}`;
+const msg = computed(
+    () =>
+        `Please confirm your Master Password to delete your ${props.deleteSelection}.\nThis operation cannot be undone.`
+);
+const title = computed(() => `Delete ${props.deleteSelection}`);
 
 const password = ref('');
 const hidePassword = ref(true);
@@ -113,14 +116,15 @@ const passwordRules = [(psw: string) => !!psw || 'Password is required'];
 
 async function deleteHandler() {
     loading.value = true;
-    console.debug('[ConfirmPassword] Creating MPH');
+    console.debug('[deleteHandler] Creating MPH');
 
     await deriveMKeMPH(userStore.state.email, password.value).then(async ({ MPH }) => {
         const masterPasswordHash = cryptoUtils.toHex(await MPH);
-        console.debug('[ConfirmPassword] Got MPH, closing dialogs');
+        console.debug('[deleteHandler] Got MPH, closing dialogs');
 
         let res: APIResponse | undefined;
 
+        console.debug(`[deleteHandler] Deleting ${props.deleteSelection}`);
         switch (props.deleteSelection) {
             case DELETE_SELECTION.VAULT:
                 res = await API.deleteVault(masterPasswordHash);
@@ -136,7 +140,6 @@ async function deleteHandler() {
 
                 break;
         }
-        console.log(res);
 
         if (res && res.data) {
             switch (res.data.code) {
