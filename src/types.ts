@@ -118,7 +118,7 @@ export enum WEB_CODES {
     FAIL_VAULT_ENCRYPT,
     INVALID_API_CALL,
     SERVER_UNREACHABLE,
-    VAULT_IMPORT_ERROR
+    VAULT_IMPORT_ERROR,
 }
 
 /* ===== Vault export/import types ===== */
@@ -223,4 +223,11 @@ export enum PROVIDERS {
     PWM_ENCRYPTED = 'PWM (Encrypted JSON)',
     PWM = 'PWM (JSON)',
     BITWARDEN = 'BitWarden (JSON)',
+}
+
+export enum PASSWORD_OPTIONS {
+    LOWER_CASE = 'Lower case',
+    UPPER_CASE = 'Upper case',
+    NUMBERS = 'Numbers',
+    SYMBOLS = 'Symbols',
 }
