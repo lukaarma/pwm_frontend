@@ -45,17 +45,6 @@ export function generatePassword(): string {
     const combinedCount =
         config.passwordLength - lowerCaseCount - upperCaseCount - numbersCount - symbolsCount;
 
-    console.debug(
-        `[generatePassword] Password statistics:` +
-            `\n\t Password pool: ${combinedPool}` +
-            `\n\t Password length: ${config.passwordLength}` +
-            `\n\t lowerCaseCount: ${lowerCaseCount}` +
-            `\n\t upperCaseCount: ${upperCaseCount}` +
-            `\n\t numbersCount: ${numbersCount}` +
-            `\n\t symbolsCount: ${symbolsCount}` +
-            `\n\t combinedCount: ${combinedCount}`
-    );
-
     for (let i = 0; i < lowerCaseCount; i++) {
         placeholders.push(PASSWORD_PLACEHOLDERS.LOWER_CASE);
     }
@@ -72,10 +61,10 @@ export function generatePassword(): string {
         placeholders.push(PASSWORD_PLACEHOLDERS.COMBINED);
     }
 
-    for (let i = 0; i < placeholders.length; i++) {
-        const r = Math.floor(Math.random() * i);
+    for (let i = placeholders.length - 1; i >= 1; i--) {
+        const j = Math.floor(Math.random() * i);
 
-        [placeholders[i], placeholders[r]] = [placeholders[r], placeholders[i]];
+        [placeholders[i], placeholders[j]] = [placeholders[j], placeholders[i]];
     }
 
     return placeholders

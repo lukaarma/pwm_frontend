@@ -4,199 +4,216 @@
             Secure Password Generator
         </v-card-title>
 
-        <v-form @submit.prevent="generate" fluid class="centerForm mt-8">
-            <v-textarea
-                label="Password"
-                outlined
-                auto-grow
-                rows="1"
-                row-height="5"
-                v-model="password"
-                readonly
-            />
+        <v-card-text>
+            <v-form @submit.prevent="regenerate" fluid class="centerForm mt-8">
+                <div class="toastContainer">
+                    <Toast
+                        class="formToast"
+                        :type="toastControls.type"
+                        :show="toastControls.show"
+                        :msg="toastControls.msg"
+                        @close="toastControls.show = false"
+                    />
+                </div>
 
-            <v-container class="pa-0" id="passwordGeneratorContainer">
-                <!-- SWITCH ROW MOBILE/DESKTOP -->
-                <v-row>
-                    <v-col>
-                        <v-chip-group
-                            v-model="chipSelection"
-                            mandatory
-                            multiple
-                            column
-                            class="d-flex justify-space-around"
+                <v-textarea
+                    label="Password"
+                    outlined
+                    auto-grow
+                    rows="1"
+                    row-height="5"
+                    v-model="password"
+                    readonly
+                >
+                    <template v-slot:append-inner>
+                        <v-icon :icon="mdiContentCopy" @click.stop="copyToClipBoard" />
+                    </template>
+                </v-textarea>
+
+                <v-container class="pa-0" id="passwordGeneratorContainer">
+                    <!-- SWITCH ROW MOBILE/DESKTOP -->
+                    <v-row>
+                        <v-col>
+                            <v-chip-group
+                                v-model="chipSelection"
+                                mandatory
+                                multiple
+                                column
+                                class="d-flex justify-space-around"
+                            >
+                                <v-chip
+                                    :value="PASSWORD_OPTIONS.LOWER_CASE"
+                                    :text="PASSWORD_OPTIONS.LOWER_CASE"
+                                    filter
+                                    color="green"
+                                />
+
+                                <v-chip
+                                    :value="PASSWORD_OPTIONS.UPPER_CASE"
+                                    :text="PASSWORD_OPTIONS.UPPER_CASE"
+                                    filter
+                                    color="green"
+                                />
+
+                                <v-responsive v-show="$vuetify.display.mobile" width="100%" />
+
+                                <v-chip
+                                    :value="PASSWORD_OPTIONS.NUMBERS"
+                                    :text="PASSWORD_OPTIONS.NUMBERS"
+                                    filter
+                                    color="green"
+                                />
+                                <v-chip
+                                    :value="PASSWORD_OPTIONS.SYMBOLS"
+                                    :text="PASSWORD_OPTIONS.SYMBOLS"
+                                    filter
+                                    color="green"
+                                />
+                            </v-chip-group>
+                        </v-col>
+                    </v-row>
+
+                    <!-- MOBILE SIZE CONTROLS -->
+                    <template v-if="$vuetify.display.mobile">
+                        <v-row no-gutters class="mt-4">
+                            <v-col>
+                                <v-text-field
+                                    v-model.number="passwordLength"
+                                    type="tel"
+                                    label="Password length"
+                                    @keypress="filterNumbers"
+                                    @focusout="regenerate"
+                                />
+                            </v-col>
+                        </v-row>
+
+                        <v-row no-gutters>
+                            <v-col>
+                                <v-text-field
+                                    v-model.number="numbersPercentage"
+                                    type="tel"
+                                    label="Numbers %"
+                                    suffix="%"
+                                    :disabled="!configStore.getters.numbersSelected"
+                                    @keypress="filterNumbers"
+                                    @focusout="regenerate"
+                                />
+                            </v-col>
+
+                            <v-col cols="1"></v-col>
+
+                            <v-col>
+                                <v-text-field
+                                    v-model.number="symbolsPercentage"
+                                    type="tel"
+                                    label="Symbols %"
+                                    suffix="%"
+                                    :disabled="!configStore.getters.symbolsSelected"
+                                    @keypress="filterNumbers"
+                                    @focusout="regenerate"
+                                />
+                            </v-col>
+                        </v-row>
+                    </template>
+
+                    <!-- DESKTOP SIZE CONTROLS -->
+                    <template v-else>
+                        <v-row no-gutters class="mt-8">
+                            <v-col>
+                                <div class="text-overline">Password length</div>
+                                <v-slider
+                                    v-model="passwordLength"
+                                    :min="passwordMinLength"
+                                    :max="passwordMaxLength"
+                                    step="1"
+                                    @update:modelValue="regenerate"
+                                    color="primary"
+                                >
+                                    <template v-slot:prepend>
+                                        <span class="scrollbarStart">{{ passwordLength }}</span>
+                                    </template>
+                                    <template v-slot:append>
+                                        <span class="scrollbarEnd">
+                                            Max {{ passwordMaxLength }}
+                                        </span>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+
+                        <v-row no-gutters>
+                            <v-col>
+                                <div class="text-overline">Numbers percentage</div>
+                                <v-slider
+                                    v-model="numbersPercentage"
+                                    min="0"
+                                    :max="numbersMaxPercentage"
+                                    :step="percentageStep"
+                                    :disabled="!configStore.getters.numbersSelected"
+                                    :readonly="numbersOnly"
+                                    @update:modelValue="regenerate"
+                                    color="primary"
+                                >
+                                    <template v-slot:prepend>
+                                        <span class="scrollbarStart">
+                                            {{ numbersPercentage }}%
+                                        </span>
+                                    </template>
+                                    <template v-slot:append>
+                                        <span class="scrollbarEnd">
+                                            Max {{ numbersMaxPercentage }}%
+                                        </span>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+
+                        <v-row no-gutters>
+                            <v-col>
+                                <div class="text-overline">Symbols percentage</div>
+                                <v-slider
+                                    v-model="symbolsPercentage"
+                                    min="0"
+                                    :max="symbolsMaxPercentage"
+                                    :step="percentageStep"
+                                    :disabled="!configStore.getters.symbolsSelected"
+                                    :readonly="symbolsOnly"
+                                    @update:modelValue="regenerate"
+                                    color="primary"
+                                >
+                                    <template v-slot:prepend>
+                                        <span class="scrollbarStart">
+                                            {{ symbolsPercentage }}%
+                                        </span>
+                                    </template>
+                                    <template v-slot:append>
+                                        <span class="scrollbarEnd">
+                                            Max {{ symbolsMaxPercentage }}%
+                                        </span>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+                    </template>
+
+                    <div
+                        class="mb-4 d-flex"
+                        :class="[$vuetify.display.mobile ? 'justify-space-between' : 'justify-end']"
+                    >
+                        <v-btn @click="reset" size="large" color="secondary"> Reset </v-btn>
+                        <v-btn
+                            class="ml-4"
+                            type="submit"
+                            :loading="loading"
+                            size="large"
+                            color="primary"
                         >
-                            <v-chip
-                                :value="PASSWORD_OPTIONS.LOWER_CASE"
-                                :text="PASSWORD_OPTIONS.LOWER_CASE"
-                                filter
-                                color="green"
-                            />
-
-                            <v-chip
-                                :value="PASSWORD_OPTIONS.UPPER_CASE"
-                                :text="PASSWORD_OPTIONS.UPPER_CASE"
-                                filter
-                                color="green"
-                            />
-
-                            <v-responsive v-show="$vuetify.display.mobile" width="100%" />
-
-                            <v-chip
-                                :value="PASSWORD_OPTIONS.NUMBERS"
-                                :text="PASSWORD_OPTIONS.NUMBERS"
-                                filter
-                                color="green"
-                            />
-                            <v-chip
-                                :value="PASSWORD_OPTIONS.SYMBOLS"
-                                :text="PASSWORD_OPTIONS.SYMBOLS"
-                                filter
-                                color="green"
-                            />
-                        </v-chip-group>
-                    </v-col>
-                </v-row>
-
-                <!-- TODO: MOBILE SIZE CONTROLS -->
-                <template v-if="$vuetify.display.mobile">
-                    <v-row no-gutters class="mt-4">
-                        <v-col>
-                            <v-text-field
-                                v-model.number="passwordLength"
-                                type="tel"
-                                label="Password length"
-                                @keypress="filterNumbers"
-                            />
-                        </v-col>
-                    </v-row>
-
-                    <v-row no-gutters justify="space-between">
-                        <v-btn color="primary" @click="numbersPercentage += 10"> +10 </v-btn>
-                        <v-btn color="primary" :icon="mdiPlus" />
-                        {{ passwordLength }}
-                        <v-btn color="primary"> -1 </v-btn>
-                        <v-btn color="primary"> -10 </v-btn>
-                    </v-row>
-
-                    <!-- <v-responsive width="100%" /> -->
-
-                    <!-- <v-col> numbersMinCount {{ numbersPercentage }} </v-col>
-                    <v-col> specialsMinCount {{ symbolsPercentage }} </v-col>
-
-                    <v-responsive width="100%" />
-
-                    <v-col> numbersMaxCount {{ numbersMaxPercentage }} </v-col>
-                    <v-col> specialsMaxCount {{ symbolsMaxPercentage }} </v-col>
-
-                    <v-responsive width="100%" /> -->
-                    <v-row no-gutters>
-                        <v-col>
-                            <v-text-field
-                                v-model.number="numbersPercentage"
-                                type="tel"
-                                label="Numbers percentage"
-                                @keypress="filterNumbers"
-                                @input="generate"
-                            />
-                        </v-col>
-
-                        <!-- <v-responsive v-if="$vuetify.display.xs" width="100%" /> -->
-
-                        <v-col>
-                            <v-text-field
-                                v-model.number="symbolsPercentage"
-                                type="tel"
-                                label="Symbols percentage"
-                                @keypress="filterNumbers"
-                                @input="generate"
-                            />
-                        </v-col>
-                    </v-row>
-                </template>
-
-                <!-- DESKTOP SIZE CONTROLS -->
-                <template v-else>
-                    <v-row no-gutters class="mt-8">
-                        <v-col>
-                            <div class="text-overline">Password length</div>
-                            <v-slider
-                                v-model="passwordLength"
-                                :min="passwordMinLength"
-                                :max="passwordMaxLength"
-                                step="1"
-                                @input="generate"
-                                color="primary"
-                            >
-                                <template v-slot:prepend>
-                                    <span class="scrollbarStart">{{ passwordLength }}</span>
-                                </template>
-                                <template v-slot:append>
-                                    <span class="scrollbarEnd"> Max {{ passwordMaxLength }} </span>
-                                </template>
-                            </v-slider>
-                        </v-col>
-                    </v-row>
-
-                    <v-row no-gutters>
-                        <v-col>
-                            <div class="text-overline">Numbers percentage</div>
-                            <v-slider
-                                v-model="numbersPercentage"
-                                min="0"
-                                :max="numbersMaxPercentage"
-                                :step="percentageStep"
-                                :disabled="!configStore.getters.numbersSelected"
-                                :readonly="numbersOnly"
-                                @input="generate"
-                                color="primary"
-                            >
-                                <template v-slot:prepend>
-                                    <span class="scrollbarStart"> {{ numbersPercentage }}% </span>
-                                </template>
-                                <template v-slot:append>
-                                    <span class="scrollbarEnd">
-                                        Max {{ numbersMaxPercentage }}%
-                                    </span>
-                                </template>
-                            </v-slider>
-                        </v-col>
-                    </v-row>
-
-                    <v-row no-gutters>
-                        <v-col>
-                            <div class="text-overline">Symbols percentage</div>
-                            <v-slider
-                                v-model="symbolsPercentage"
-                                min="0"
-                                :max="symbolsMaxPercentage"
-                                :step="percentageStep"
-                                :disabled="!configStore.getters.symbolsSelected"
-                                :readonly="symbolsOnly"
-                                @input="generate"
-                                color="primary"
-                            >
-                                <template v-slot:prepend>
-                                    <span class="scrollbarStart"> {{ symbolsPercentage }}% </span>
-                                </template>
-                                <template v-slot:append>
-                                    <span class="scrollbarEnd">
-                                        Max {{ symbolsMaxPercentage }}%
-                                    </span>
-                                </template>
-                            </v-slider>
-                        </v-col>
-                    </v-row>
-                </template>
-            </v-container>
-
-            <div class="text-right my-4">
-                <v-btn @click="reset" size="large" color="secondary"> Reset </v-btn>
-                <v-btn class="ml-4" type="submit" :loading="loading" size="large" color="primary">
-                    Generate
-                </v-btn>
-            </div>
-        </v-form>
+                            Regenerate
+                        </v-btn>
+                    </div>
+                </v-container>
+            </v-form>
+        </v-card-text>
     </v-card>
 </template>
 
@@ -218,9 +235,10 @@
 </style>
 
 <script setup lang="ts">
-import { mdiPlus } from '@mdi/js';
+import { mdiContentCopy } from '@mdi/js';
 import { ref, computed, watch } from 'vue';
 
+import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import { filterNumbers, generatePassword } from '@/services/tools';
 import {
     useConfigStore,
@@ -232,14 +250,16 @@ import {
 import { PASSWORD_OPTIONS } from '@/types';
 
 const configStore = useConfigStore();
-const numbersOnly = computed(
-    () => chipSelection.value.length === 1 && chipSelection.value[0] === PASSWORD_OPTIONS.NUMBERS
-);
-const symbolsOnly = computed(
-    () => chipSelection.value.length === 1 && chipSelection.value[0] === PASSWORD_OPTIONS.SYMBOLS
-);
-// button loading
+
+// DOM
 const loading = ref(false);
+const toastControls = ref<ToastControls>({
+    show: false,
+    msg: 'Password copied',
+    type: 'info',
+    timeout: undefined,
+    timeoutLength: 2000,
+});
 
 // bind configStore items to reactive elements
 const chipSelection = computed({
@@ -250,6 +270,12 @@ const chipSelection = computed({
         configStore.commit(CONFIG_M.EDIT_PWD_GEN_CONFIG, { chipSelection: newValue });
     },
 });
+const numbersOnly = computed(
+    () => chipSelection.value.length === 1 && chipSelection.value[0] === PASSWORD_OPTIONS.NUMBERS
+);
+const symbolsOnly = computed(
+    () => chipSelection.value.length === 1 && chipSelection.value[0] === PASSWORD_OPTIONS.SYMBOLS
+);
 
 const password = ref('');
 const passwordLength = computed({
@@ -305,55 +331,51 @@ const symbolsMaxPercentage = computed(
         (configStore.getters.numbersSelected ? numbersPercentage.value : 0)
 );
 
-watch(
-    () => configStore.getters.numbersSelected,
-    (newValue) => {
-        if (!newValue) {
-            return;
-        }
-
-        if (symbolsPercentage.value === 90) {
-            symbolsPercentage.value = 85;
-        }
-        if (numbersPercentage.value > numbersMaxPercentage.value) {
-            numbersPercentage.value = numbersMaxPercentage.value;
-        }
+watch(numbersMaxPercentage, () => {
+    if (numbersMaxPercentage.value > 0 && numbersPercentage.value > numbersMaxPercentage.value) {
+        numbersPercentage.value = numbersMaxPercentage.value;
     }
-);
+});
+
+watch(symbolsMaxPercentage, () => {
+    if (symbolsMaxPercentage.value > 0 && symbolsPercentage.value > symbolsMaxPercentage.value) {
+        symbolsPercentage.value = symbolsMaxPercentage.value;
+    }
+});
 
 watch(
-    () => configStore.getters.symbolsSelected,
-    (newValue) => {
-        if (!newValue) {
-            return;
+    () => configStore.state.pwdGen.chipSelection,
+    (newSelection, oldSelection) => {
+        // some chip has been activated
+        if (
+            newSelection.length > oldSelection.length &&
+            numbersMaxPercentage.value === 0 &&
+            symbolsMaxPercentage.value === 0
+        ) {
+            if (numbersPercentage.value >= symbolsPercentage.value) {
+                numbersPercentage.value -= percentageStep;
+            } else {
+                symbolsPercentage.value -= percentageStep;
+            }
         }
 
-        if (numbersPercentage.value === 90) {
-            numbersPercentage.value = 85;
-        }
-        if (symbolsPercentage.value > symbolsMaxPercentage.value) {
-            symbolsPercentage.value = symbolsMaxPercentage.value;
-        }
+        regenerate();
     }
 );
-
-// constants
-
-// validate number input for passwordLength
 
 function capAndRound() {
-    console.debug(`[capAndRound] numbersPercentage ${numbersPercentage.value}`);
-    console.debug(`[capAndRound] symbolsPercentage ${symbolsPercentage.value}`);
-
-    if (passwordLength.value < 0) {
-        passwordLength.value = 0;
+    if (passwordLength.value < passwordMinLength) {
+        passwordLength.value = passwordMinLength;
     } else if (passwordLength.value > passwordMaxLength) {
         passwordLength.value = passwordMaxLength;
     }
 
     if (numbersPercentage.value < 0) {
         numbersPercentage.value = 0;
-    } else if (numbersPercentage.value > numbersMaxPercentage.value) {
+    } else if (
+        numbersMaxPercentage.value > 0 &&
+        numbersPercentage.value > numbersMaxPercentage.value
+    ) {
         numbersPercentage.value = numbersMaxPercentage.value;
     } else {
         numbersPercentage.value =
@@ -362,7 +384,10 @@ function capAndRound() {
 
     if (symbolsPercentage.value < 0) {
         symbolsPercentage.value = 0;
-    } else if (symbolsPercentage.value > symbolsMaxPercentage.value) {
+    } else if (
+        symbolsMaxPercentage.value > 0 &&
+        symbolsPercentage.value > symbolsMaxPercentage.value
+    ) {
         symbolsPercentage.value = symbolsMaxPercentage.value;
     } else {
         symbolsPercentage.value =
@@ -370,7 +395,7 @@ function capAndRound() {
     }
 }
 
-async function generate() {
+async function regenerate() {
     capAndRound();
 
     password.value = generatePassword();
@@ -390,5 +415,21 @@ function reset() {
 
     numbersPercentage.value = 10;
     symbolsPercentage.value = 10;
+
+    regenerate();
 }
+
+function copyToClipBoard() {
+    clearTimeout(toastControls.value.timeout);
+
+    navigator.clipboard.writeText(password.value);
+    toastControls.value.show = true;
+
+    toastControls.value.timeout = setTimeout(() => {
+        toastControls.value.show = false;
+    }, toastControls.value.timeoutLength);
+}
+
+// on load, generate
+regenerate();
 </script>
