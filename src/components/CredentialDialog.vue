@@ -17,7 +17,7 @@
                     class="d-inline-block centerIcon"
                 >
                     <template v-slot:placeholder>
-                        <v-icon :icon="mdiAccountBox" />
+                        <v-icon :icon="mdiWeb" size="64" />
                     </template>
                 </v-img>
                 {{ title }}
@@ -246,7 +246,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import { checkPWNEDPassword } from '@/services/API';
 import { sendVault } from '@/services/vault';
 import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
-import { urlProtocolRegex } from '@/services/utils';
+import { hasProtocolRegex } from '@/services/utils';
 import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
 
 // NOTE: Vue gives error with window
@@ -436,7 +436,7 @@ async function saveChanges(samePasswordOverride = false) {
             }
 
             // check for url protocol
-            if (credential.value.url && !urlProtocolRegex.test(credential.value.url)) {
+            if (credential.value.url && !hasProtocolRegex.test(credential.value.url)) {
                 credential.value.url = `http://${credential.value.url}`;
             }
 

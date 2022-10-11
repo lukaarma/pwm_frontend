@@ -1,6 +1,6 @@
 <template>
     <v-card elevation="4" class="cardBackground">
-        <v-card-title class="text-center text-h4 mt-2 mb-4 font-weight-light">
+        <v-card-title class="text-center text-h4 mt-2 mb-4 font-weight-light breakNewline">
             Password Checker
         </v-card-title>
 

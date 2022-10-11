@@ -144,13 +144,15 @@ export type ExportedPWMVault =
 
 type BitWardenCredential = {
     name: string;
-    login: {
-        uris: Array<{
-            uri: string;
-        }>;
-        username: string;
-        password: string;
-    };
+    login:
+        | {
+              uris: Array<{
+                  uri: string | null;
+              }> | null;
+              username: string | null;
+              password: string | null;
+          }
+        | undefined;
 };
 
 export type ExportedBitWardenVault = {
@@ -199,14 +201,15 @@ export function isExportedBitWardenVault(vault: any): vault is ExportedBitWarden
 
 function isBitWardenCredential(credential: any): credential is BitWardenCredential {
     return (
+        credential &&
         typeof credential.name === 'string' &&
-        typeof credential.login === 'object' &&
-        Array.isArray(credential.login.uris) &&
-        credential.login.uris.every(
-            (el: any) => typeof el === 'object' && typeof el.uri === 'string'
-        ) &&
-        typeof credential.login.username === 'string' &&
-        typeof credential.login.password === 'string'
+        ((typeof credential.login === 'object' &&
+            (Array.isArray(credential.login.uris) ||
+                typeof credential.login.uris === 'undefined') &&
+            (typeof credential.login.username === 'string' || credential.login.username === null) &&
+            (typeof credential.login.password === 'string' ||
+                credential.login.password === null)) ||
+            typeof credential.login === 'undefined')
     );
 }
 

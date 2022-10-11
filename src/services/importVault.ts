@@ -1,5 +1,5 @@
 import { decryptExportedVault } from '@/services/cryptoUtils';
-import { JSONDateParser, urlProtocolRegex } from '@/services/utils';
+import { JSONDateParser, hasProtocolRegex } from '@/services/utils';
 import { sendVault } from '@/services/vault';
 import { type Credential, vaultStore, VAULT_M } from '@/stores/vaultStore';
 import {
@@ -52,7 +52,7 @@ export async function importVault(
         return res;
     } catch (err) {
         if (err instanceof Error) {
-            console.error(`[importVault] Caught error! '${err.name}'`);
+            console.error(`[importVault] Caught error! '${err.name}: ${err.message}' `);
 
             return {
                 ok: false,
@@ -70,7 +70,7 @@ export async function importVault(
             ok: false,
             err: {
                 code: WEB_CODES.VAULT_IMPORT_ERROR,
-                message: 'Unexpected error during import, please contact supportF',
+                message: 'Unexpected error during import, please contact support',
             },
         };
     }
@@ -121,7 +121,7 @@ export async function importNativeJSON(file: File, password: string, encryptedSe
 
         credentials.forEach((cred) => {
             cred.name ??= 'Imported';
-            if (cred.url && !urlProtocolRegex.test(cred.url)) {
+            if (cred.url && !hasProtocolRegex.test(cred.url)) {
                 cred.url = `http://${cred.url}`;
             }
         });
@@ -144,22 +144,20 @@ export async function importBitwardenJSON(file: File) {
         throw new Error('Invalid JSON file! Please check that you have the correct file selected!');
     }
 
-    console.debug(`[IMPORT_BITWARDEN] ${JSON.stringify(parsedImport, null, 4)}`);
-
     if (isExportedBitWardenVault(parsedImport)) {
         console.debug('[IMPORT_NATIVE] Valid ExportedPWMVault provided');
-        const credentials = parsedImport.items.map((item) => {
-            let url = item.login.uris[0].uri ?? '';
 
-            if (url && !urlProtocolRegex.test(url)) {
+        const credentials = parsedImport.items.map((item) => {
+            let url = item.login?.uris?.find((el) => el.uri)?.uri ?? '';
+            if (url && !hasProtocolRegex.test(url)) {
                 url = `http://${url}`;
             }
 
             return {
                 name: item.name ?? 'Imported',
                 url,
-                username: item.login.username,
-                password: item.login.password,
+                username: item.login?.username ?? '',
+                password: item.login?.password ?? '',
             } as Credential;
         });
 

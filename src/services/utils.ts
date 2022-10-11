@@ -19,4 +19,4 @@ export function logout() {
     router.push('/login');
 }
 
-export const urlProtocolRegex = /^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//;
+export const hasProtocolRegex = /^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//;
