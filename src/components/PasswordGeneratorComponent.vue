@@ -306,18 +306,31 @@ const symbolsMaxPercentage = computed(
 );
 
 watch(
-    () => configStore.getters.symbolsSelected,
-    () => {
+    () => configStore.getters.numbersSelected,
+    (newValue) => {
+        if (!newValue) {
+            return;
+        }
+
+        if (symbolsPercentage.value === 90) {
+            symbolsPercentage.value = 85;
+        }
         if (numbersPercentage.value > numbersMaxPercentage.value) {
-            console.log(numbersPercentage.value, numbersMaxPercentage.value);
             numbersPercentage.value = numbersMaxPercentage.value;
         }
     }
 );
 
 watch(
-    () => configStore.getters.numbersSelected,
-    () => {
+    () => configStore.getters.symbolsSelected,
+    (newValue) => {
+        if (!newValue) {
+            return;
+        }
+
+        if (numbersPercentage.value === 90) {
+            numbersPercentage.value = 85;
+        }
         if (symbolsPercentage.value > symbolsMaxPercentage.value) {
             symbolsPercentage.value = symbolsMaxPercentage.value;
         }
