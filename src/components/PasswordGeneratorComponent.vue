@@ -146,7 +146,7 @@
                                 <div class="text-overline">Numbers percentage</div>
                                 <v-slider
                                     v-model="numbersPercentage"
-                                    min="0"
+                                    :min="configStore.getters.numbersSelected ? 5 : 0"
                                     :max="numbersMaxPercentage"
                                     :step="percentageStep"
                                     :disabled="!configStore.getters.numbersSelected"
@@ -173,7 +173,7 @@
                                 <div class="text-overline">Symbols percentage</div>
                                 <v-slider
                                     v-model="symbolsPercentage"
-                                    min="0"
+                                    :min="configStore.getters.symbolsSelected ? 5 : 0"
                                     :max="symbolsMaxPercentage"
                                     :step="percentageStep"
                                     :disabled="!configStore.getters.symbolsSelected"
