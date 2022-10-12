@@ -1,6 +1,7 @@
 import router from '@/router';
 import { userStore } from '@/stores/userStore';
 import { vaultStore, VAULT_M } from '@/stores/vaultStore';
+import { localStorageVaultKey, sendVault } from '@/services/vault';
 
 export function JSONDateParser(_: string, value: unknown) {
     const ISORegex =
@@ -13,7 +14,10 @@ export function JSONDateParser(_: string, value: unknown) {
     return value;
 }
 
-export function logout() {
+export async function logout() {
+    if (localStorage.getItem(localStorageVaultKey)) {
+        await sendVault();
+    }
     userStore.commit('logout');
     vaultStore.commit(VAULT_M.LOGOUT);
     router.push('/login');

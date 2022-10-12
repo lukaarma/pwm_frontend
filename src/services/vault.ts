@@ -2,7 +2,7 @@ import API from './API';
 import { encryptVault, decryptVault } from './cryptoUtils';
 import { JSONDateParser } from '@/services/utils';
 import { VAULT_M, vaultStore, type VaultStore } from '@/stores/vaultStore';
-import { WEB_CODES } from '@/types';
+import { isEncryptedVault, WEB_CODES } from '@/types';
 import type { Result, VaultBody } from '@/types';
 
 export const localStorageVaultKey = 'vault';
@@ -14,39 +14,55 @@ export async function getVault(): Promise<Result> {
         localStorage.getItem(localStorageVaultKey) || 'null',
         JSONDateParser
     );
-    if (
-        localVault &&
-        localVault.version &&
-        typeof localVault.version === 'number' &&
-        localVault.lastModified &&
-        localVault.lastModified instanceof Date &&
-        localVault.IV &&
-        typeof localVault.IV === 'string' &&
-        localVault.data &&
-        typeof localVault.data === 'string'
-    ) {
+    let localOk = false;
+
+    if (isEncryptedVault(localVault)) {
         console.debug('[getVault] found local vault, synchronizing with server');
-        await decryptVault(localVault);
+        try {
+            await decryptVault(localVault);
+            localOk = true;
+        } catch (err) {
+            console.error(err);
+        }
 
-        const res = await API.sendVault(localVault, false);
+        if (localOk) {
+            const res = await API.sendVault(localVault, false);
 
-        // if cannot send vault, display error and retry button
-        // TODO: if a more recent vault exists delete local
-        if (!res.data) {
-            return {
-                ok: false,
-                err: res.err ?? {
-                    code: WEB_CODES.MISSING_DATA_AND_ERROR,
-                    message: '[getVault] Missing data and error!',
-                },
-            };
-        } else {
-            console.debug('[getVault] Synchronized, deleting local vault');
-            localStorage.removeItem(localStorageVaultKey);
+            // if cannot send vault, display error and retry button
+            // TODO: if a more recent vault exists delete local
+            if (!res.data) {
+                if (
+                    res.err?.code !== WEB_CODES.VAULT_LOWER_VERSION &&
+                    res.err?.code !== WEB_CODES.VAULT_OLDER_DATE
+                ) {
+                    return {
+                        ok: false,
+                        err: res.err ?? {
+                            code: WEB_CODES.MISSING_DATA_AND_ERROR,
+                            message: '[getVault] Missing data and error!',
+                        },
+                    };
+                }
+            } else {
+                console.debug('[getVault] Synchronized local vault, deleting local storage');
+                localStorage.removeItem(localStorageVaultKey);
+
+                return {
+                    ok: true,
+                    data: {
+                        code: WEB_CODES.VAULT_DECRYPTED,
+                        message: '[getVault] Vault decrypted successfully',
+                    },
+                };
+            }
         }
     }
 
-    console.debug('[getVault] Synchronizing most recent vault from server');
+    console.debug(
+        '[getVault] Deleting old local copy, synchronizing most recent vault from server'
+    );
+    localStorage.removeItem(localStorageVaultKey);
+
     const res = await API.getVault();
 
     if (!res.data) {
@@ -151,7 +167,7 @@ export async function sendVault(createNew = false): Promise<Result> {
     };
 }
 
-async function initializeVault(): Promise<Result> {
+export async function initializeVault(): Promise<Result> {
     const vaultIV = window.crypto.getRandomValues(new Uint8Array(16));
 
     const initialVault: VaultStore = {

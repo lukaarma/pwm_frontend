@@ -220,6 +220,20 @@ function isBitWardenCredential(credential: any): credential is BitWardenCredenti
     );
 }
 
+export function isEncryptedVault(vault: any): vault is VaultBody {
+    return (
+        vault &&
+        vault.version &&
+        typeof vault.version === 'number' &&
+        vault.lastModified &&
+        vault.lastModified instanceof Date &&
+        vault.IV &&
+        typeof vault.IV === 'string' &&
+        vault.data &&
+        typeof vault.data === 'string'
+    );
+}
+
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 // global enums
