@@ -79,7 +79,7 @@ import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import API from '@/services/API';
 import cryptoUtils, { deriveMKeMPH } from '@/services/cryptoUtils';
 import { logout } from '@/services/utils';
-import { localStorageVaultKey } from '@/services/vault';
+import { initializeVault, localStorageVaultKey } from '@/services/vault';
 import { localStorageConfigKey } from '@/stores/configStore';
 import { useUserStore } from '@/stores/userStore';
 import { DELETE_SELECTION, WEB_CODES, type APIResponse } from '@/types';
@@ -147,6 +147,9 @@ async function deleteHandler() {
                     toastControls.value.show = false;
                     password.value = '';
                     localStorage.removeItem(localStorageVaultKey);
+
+                    await initializeVault();
+
                     emit('success');
                     break;
 
