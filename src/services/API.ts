@@ -9,6 +9,7 @@ import type {
     SignupBody,
     UserInfo,
     UpdateProfileBody,
+    ChangePasswordBody,
     VaultBody,
     VaultResponse,
     APIResponse,
@@ -172,12 +173,44 @@ async function updateUserInfo(profile: UpdateProfileBody): Promise<APIResponse<U
         });
 }
 
-async function deleteUser(masterPwdHash: string): Promise<APIResponse> {
-    return API.post('/user/delete',
-    { masterPwdHash },
-    {
+async function changePassword(changePasswordInfo: ChangePasswordBody): Promise<APIResponse> {
+    return API.post('/user/changePassword', changePasswordInfo, {
         headers: { Authorization: userStore.state.authHeader },
     })
+        .then((res) => {
+            return {
+                data: res.data,
+            };
+        })
+        .catch((err: Error | AxiosError) => {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 502) {
+                    return {
+                        err: {
+                            code: WEB_CODES.SERVER_UNREACHABLE,
+                            message:
+                                'Error while communicating with our servers! Please try again later.',
+                        },
+                    };
+                }
+                return {
+                    err: (err.response?.data as WebMessage) ?? {
+                        code: err.code,
+                        message: err.message,
+                    },
+                };
+            } else {
+                throw err;
+            }
+        });
+}
+
+async function deleteUser(masterPwdHash: string): Promise<APIResponse> {
+    return API.post('/user/delete',
+        { masterPwdHash },
+        {
+            headers: { Authorization: userStore.state.authHeader },
+        })
         .then((res) => {
             return {
                 data: res.data,
@@ -277,7 +310,7 @@ async function sendVault(vault: VaultBody, createNew = false): Promise<APIRespon
 async function deleteVault(masterPwdHash: string): Promise<APIResponse> {
     return API.post(
         '/vault/delete',
-         {masterPwdHash} ,
+        { masterPwdHash },
         {
             headers: { Authorization: userStore.state.authHeader },
         }
@@ -318,6 +351,7 @@ export default {
     getVault,
     deleteVault,
     getUserInfo,
+    changePassword,
     deleteUser,
     updateUserInfo,
 };

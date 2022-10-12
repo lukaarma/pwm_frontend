@@ -30,6 +30,13 @@ export type UpdateProfileBody = {
     lastName?: string;
 };
 
+export type ChangePasswordBody = {
+    oldMasterPwdHash: string;
+    newMasterPwdHash: string;
+    IV: string;
+    PSK: string;
+};
+
 export type UserInfo = {
     email: string;
     firstName: string;

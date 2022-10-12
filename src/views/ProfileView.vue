@@ -4,7 +4,7 @@
 
         <div class="toastContainer">
             <Toast
-                class="formMessage"
+                class="formToast"
                 :type="toastControls.type"
                 :show="toastControls.show"
                 :msg="toastControls.msg"
@@ -40,6 +40,8 @@
             </v-btn>
         </div>
     </v-form>
+
+    <ChangePassword />
 
     <div class="centerForm mt-16 d-flex flex-column align-center">
         <v-btn
@@ -90,13 +92,7 @@
     />
 </template>
 
-<style scoped lang="scss">
-.formMessage {
-    position: absolute;
-    width: 100%;
-    transform: translate(0, -120%);
-}
-
+<style lang="scss">
 .deleteButton {
     max-width: 70%;
     width: 100%;
@@ -109,13 +105,15 @@ import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-import ConfirmDeletion from '../components/ConfirmDeletionDialog.vue';
+import ConfirmDeletion from '@/components/ConfirmDeletionDialog.vue';
 import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import { updateUserInfo } from '@/services/profile';
 import { logout } from '@/services/utils';
 import { useUserStore } from '@/stores/userStore';
 import { DELETE_SELECTION } from '@/types';
 import type { UpdateProfileBody } from '@/types';
+
+import ChangePassword from '@/components/ChangePasswordComponent.vue';
 
 const userStore = useUserStore();
 
