@@ -9,7 +9,7 @@ const vuetify = createVuetify({
     display: {
         mobileBreakpoint: 'sm',
         thresholds: {
-            sm: 720
+            sm: 768
         }
     },
     theme: {
