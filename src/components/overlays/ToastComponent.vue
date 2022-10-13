@@ -9,6 +9,12 @@
     </v-slide-y-reverse-transition>
 </template>
 
+<style>
+.v-alert__close {
+    margin-left: 8px;
+}
+</style>
+
 <script setup lang="ts">
 import { mdiClose } from '@mdi/js';
 
