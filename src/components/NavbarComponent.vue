@@ -65,8 +65,7 @@
     </v-app-bar>
 </template>
 
-<style scoped lang="scss">
-@use '@/styles.scss';
+<style lang="scss">
 .toggleDarkMode {
     transition: transform 0.3s ease-in-out !important;
 }

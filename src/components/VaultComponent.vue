@@ -26,8 +26,8 @@
             </v-col>
         </v-row>
 
-        <v-row>
-            <v-col cols="10">
+        <v-row class="flex-nowrap">
+            <v-col cols="10" class="flex-shrink-1">
                 <v-text-field
                     v-model="credentialsFilter"
                     label="Search credentials"
@@ -37,7 +37,7 @@
                     clearable
                 />
             </v-col>
-            <v-col cols="2">
+            <v-col cols="2" class="perPageSelector">
                 <v-select
                     :model-value="configStore.state.itemsPerPage"
                     @update:model-value="setItemsPerPage"
@@ -112,6 +112,10 @@
 <style lang="scss">
 .vault {
     max-width: 900px;
+}
+
+.perPageSelector {
+    min-width: 150px;
 }
 </style>
 

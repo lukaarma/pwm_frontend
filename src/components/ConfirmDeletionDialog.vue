@@ -54,8 +54,6 @@
 </template>
 
 <style lang="scss">
-@use '@/styles.scss';
-
 /* BUG: there is a bug report (https://github.com/vuetifyjs/vuetify/issues/15403) open
     in the Vuetify repo because dialog max-width is not working correctly.
     Solution: we hijack the default overlay css only on this form (thanks to the ID)*/

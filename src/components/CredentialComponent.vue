@@ -13,8 +13,8 @@
                     </template>
                 </v-img>
 
-                <v-col :cols="$vuetify.display.mobile ? 8 : undefined">
-                    <v-card-title>
+                <v-col :cols="$vuetify.display.mobile ? 8 : 7">
+                    <v-card-title >
                         {{ credential.name }}
                     </v-card-title>
                     <v-card-subtitle> {{ credential.username }} </v-card-subtitle>

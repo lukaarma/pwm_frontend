@@ -10,15 +10,19 @@
                 released on the web.
             </p>
 
-            For more detailed information visit
-            <a href="https://haveibeenpwned.com/Passwords" target="_blank"> Have I Been Pwned </a>
-            website.
+            <p>
+                For more detailed information visit
+                <a href="https://haveibeenpwned.com/Passwords" target="_blank" class="customLink">
+                    Have I Been Pwned
+                </a>
+                website.
+            </p>
         </v-card-text>
 
-        <v-form ref="form" @submit.prevent="check" fluid class="centerForm mb-4">
+        <v-form ref="form" @submit.prevent="check" fluid class="centerForm">
             <div class="toastContainer">
                 <Toast
-                    class="passwordToast"
+                    class="formToast"
                     type="error"
                     :show="toastControls.show"
                     :msg="toastControls.msg"
@@ -50,33 +54,21 @@
             </div>
         </v-form>
         <v-card-text class="text-center">
-            <p>
-                Note: we don't keep any sensitive data on our servers. The password will be sent to
-                haveibeenpwned services only on secured channels.
-            </p>
-            <a
-                href="https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity"
-                target="_blank"
-            >
-                Read more about how password are secured here website.
-            </a>
+            Note: we don't keep any sensitive data on our servers. The password will be sent to
+            haveibeenpwned services only on secured channels.
+            <div>
+                Read more about how password are secured
+                <a
+                    href="https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity"
+                    target="_blank"
+                    class="customLink"
+                >
+                    here.
+                </a>
+            </div>
         </v-card-text>
     </v-card>
 </template>
-
-<style lang="scss">
-@use '@/styles.scss';
-
-.customLink {
-    color: red;
-}
-
-.passwordToast {
-    position: absolute;
-    width: 100%;
-    transform: translate(0, -120%);
-}
-</style>
 
 <script setup lang="ts">
 import { mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';

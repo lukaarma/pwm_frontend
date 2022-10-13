@@ -22,10 +22,13 @@
 
                 <p class="mb-2">
                     Once you have registered via the
-                    <RouterLink to="/signup">registration form</RouterLink> you will have your own
-                    safe in which to save your credentials. PWM allows you to add your credentials
-                    one by one or to bulk import them from an existing PWM backup or from
-                    <a href="https://bitwarden.com/" target="_blank"> Bitwarden </a>
+                    <RouterLink to="/signup" class="customLink">registration form</RouterLink> you
+                    will have your own safe in which to save your credentials. PWM allows you to add
+                    your credentials one by one or to bulk import them from an existing PWM backup
+                    or from
+                    <a href="https://bitwarden.com/" target="_blank" class="customLink">
+                        Bitwarden
+                    </a>
                 </p>
             </v-col>
         </v-row>

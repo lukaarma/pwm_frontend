@@ -1,3 +1,7 @@
+p {
+    font-size: 18px;
+}
+
 .centerForm {
     margin: 0 auto;
     max-width: 650px;
@@ -42,4 +46,26 @@
 
 .breakNewline {
     white-space: pre-wrap;
+}
+
+.v-theme--light :is(.customLink, .customLink:active, .customLink:visited) {
+    color: #0060ff;
+    text-decoration: none;
+}
+
+.v-theme--dark :is(.customLink, .customLink:active, .customLink:visited) {
+    color: #3366bb;
+    text-decoration: none;
+}
+
+.customLink:hover {
+    text-decoration: underline;
+}
+
+@media only screen and (max-width: 768px) {
+    .customLink,
+    .customLink:active,
+    .customLink:visited {
+        text-decoration: underline !important;
+    }
 }

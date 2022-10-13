@@ -56,10 +56,6 @@
     </v-card>
 </template>
 
-<style lang="scss">
-@use '@/styles.scss';
-</style>
-
 <script setup lang="ts">
 import { mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 import { computed, ref, watch } from 'vue';

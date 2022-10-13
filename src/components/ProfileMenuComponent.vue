@@ -47,13 +47,6 @@
 </template>
 
 <style lang="scss">
-@use '@/styles.scss';
-
-// .alwaysBorder {
-//     border: thin solid currentColor !important;
-//     box-shadow: none !important;
-// }
-
 .profileMenu {
     margin: 0 auto;
     text-align: center;
