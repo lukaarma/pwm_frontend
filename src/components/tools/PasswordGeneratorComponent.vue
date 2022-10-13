@@ -5,10 +5,10 @@
         </v-card-title>
 
         <v-card-text>
-            <v-form @submit.prevent="regenerate" fluid class="centerForm mt-8">
+            <v-form @submit.prevent="regenerate" fluid class="centerForm mt-4">
                 <div class="toastContainer">
                     <Toast
-                        class="formToast"
+                        class="formToast passwordToast"
                         :type="toastControls.type"
                         :show="toastControls.show"
                         :msg="toastControls.msg"
@@ -16,19 +16,21 @@
                     />
                 </div>
 
-                <v-textarea
-                    label="Password"
-                    outlined
-                    auto-grow
-                    rows="1"
-                    row-height="5"
-                    v-model="password"
-                    readonly
-                >
-                    <template v-slot:append-inner>
-                        <v-icon :icon="mdiContentCopy" @click.stop="copyToClipBoard" />
-                    </template>
-                </v-textarea>
+                <div class="d-flex passwordBox">
+                    <p class="passwordText">
+                        <span v-for="(char, index) in password" :key="index" :class="color(char)">{{
+                            char
+                        }}</span>
+                    </p>
+
+                    <v-spacer />
+
+                    <v-icon
+                        :icon="mdiContentCopy"
+                        class="passwordCopyIcon my-auto"
+                        @click.stop="copyToClipBoard"
+                    />
+                </div>
 
                 <v-container class="pa-0" id="passwordGeneratorContainer">
                     <!-- SWITCH ROW MOBILE/DESKTOP -->
@@ -118,7 +120,7 @@
 
                     <!-- DESKTOP SIZE CONTROLS -->
                     <template v-else>
-                        <v-row no-gutters class="mt-8">
+                        <v-row no-gutters class="mt-4">
                             <v-col>
                                 <div class="text-overline">Password length</div>
                                 <v-slider
@@ -218,6 +220,14 @@
 </template>
 
 <style lang="scss">
+.passwordToast {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+}
+
 .scrollbarStart {
     display: inline-block;
     width: 3rem;
@@ -231,6 +241,54 @@
 // override default Vuetify style
 #passwordGeneratorContainer .v-input__prepend {
     margin-inline-end: 8px;
+}
+
+.passwordBox {
+    max-width: 500px;
+    margin: 0px auto 16px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+.passwordText {
+    margin: 16px 8px 16px 16px;
+}
+
+.passwordNumber {
+    color: #9c27b0;
+}
+.passwordSymbol {
+    color: #4caf50;
+}
+
+.passwordCopyIcon {
+    min-width: 32px;
+    min-height: 32px;
+    margin: auto 8px;
+}
+
+.v-theme--light {
+    & .passwordBox {
+        border-color: #a4a4a4;
+    }
+
+    & .passwordCopyIcon {
+        color: #757575;
+    }
+}
+
+.v-theme--dark {
+    & .passwordBox {
+        border-color: white;
+    }
+
+    & .passwordCopyIcon {
+        color: #999999;
+    }
 }
 </style>
 
@@ -428,6 +486,16 @@ function copyToClipBoard() {
     toastControls.value.timeout = setTimeout(() => {
         toastControls.value.show = false;
     }, toastControls.value.timeoutLength);
+}
+
+function color(char: string) {
+    if (/[a-zA-Z]/.test(char)) {
+        return '';
+    } else if (/\d/.test(char)) {
+        return 'passwordNumber';
+    } else {
+        return 'passwordSymbol';
+    }
 }
 
 // on load, generate
