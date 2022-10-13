@@ -55,14 +55,13 @@ export async function getVault(): Promise<Result> {
                     },
                 };
             }
+            console.debug(
+                '[getVault] Deleting old local copy'
+            );
+            localStorage.removeItem(localStorageVaultKey);
         }
     }
-
-    console.debug(
-        '[getVault] Deleting old local copy, synchronizing most recent vault from server'
-    );
-    localStorage.removeItem(localStorageVaultKey);
-
+    console.debug('[getVault] Synchronizing most recent vault from server');
     const res = await API.getVault();
 
     if (!res.data) {

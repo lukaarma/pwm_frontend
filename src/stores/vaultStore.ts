@@ -60,6 +60,7 @@ export const vaultStore = createStore<VaultStore>({
     },
     getters: {
         getCredentials: (state) => (filter: string, page: number, itemsPerPage: number) => {
+            console.debug('[getCredentials] update');
             let filtered: Array<number>;
             filter = filter.toLowerCase();
 
@@ -101,7 +102,13 @@ export const vaultStore = createStore<VaultStore>({
             window.crypto.getRandomValues(state.IV);
         },
         updateCredential(state, update: MUpdateCredential) {
-            if (update.newIndex) {
+            if (update.newIndex !== undefined) {
+                // if new credential is after actual position,
+                //we need to reduce of 1 to account for deletion
+                if (update.newIndex > update.index) {
+                    update.newIndex--;
+                }
+
                 // delete at current index
                 state.credentials.splice(update.index, 1);
                 // insert at new index
@@ -159,7 +166,7 @@ export const vaultStore = createStore<VaultStore>({
                 );
             }
 
-            // if new insert, else update
+            // if new insert commit insert
             if (update.index === -1) {
                 console.debug(`[VAULT_STORE] Inserting credential at ${newIndex}`);
 
@@ -169,6 +176,7 @@ export const vaultStore = createStore<VaultStore>({
                     credential: { ...update.credential },
                 });
             } else {
+                // else update
                 console.debug(
                     `[VAULT_STORE] Updating credential at ${update.index} to ${newIndex}`
                 );
