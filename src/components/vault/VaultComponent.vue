@@ -123,10 +123,10 @@
 import { mdiPlus, mdiMagnify } from '@mdi/js';
 import { computed, ref, watch } from 'vue';
 
-import Credential from '@/components/CredentialComponent.vue';
-import CredentialDialog from '@/components/CredentialDialog.vue';
-import { useVaultStore } from '@/stores/vaultStore';
+import Credential from '@/components/vault/CredentialComponent.vue';
+import CredentialDialog from '@/components/vault/CredentialDialog.vue';
 import { useConfigStore } from '@/stores/configStore';
+import { useVaultStore } from '@/stores/vaultStore';
 
 const vaultStore = useVaultStore();
 const configStore = useConfigStore();

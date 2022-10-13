@@ -238,7 +238,7 @@
 import { mdiContentCopy } from '@mdi/js';
 import { ref, computed, watch } from 'vue';
 
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import { filterNumbers, generatePassword } from '@/services/tools';
 import {
     useConfigStore,

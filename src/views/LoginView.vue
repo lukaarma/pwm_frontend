@@ -52,7 +52,7 @@ import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import LogoExtended from '@/components/LogoExtended.vue';
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import router from '@/router';
 import doLogin from '@/services/login';
 

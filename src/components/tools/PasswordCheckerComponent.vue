@@ -76,7 +76,7 @@ import { ref } from 'vue';
 import type vuetify from 'vuetify/components';
 
 import { checkPWNEDPassword } from '@/services/API';
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 
 // DOM content
 const form = ref<InstanceType<typeof vuetify.VForm> | null>(null);

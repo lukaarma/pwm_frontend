@@ -240,11 +240,11 @@ import {
 import { computed, ref, watch } from 'vue';
 import type vuetify from 'vuetify/components';
 
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+import ConfirmationDialog from '@/components/overlays/ConfirmationDialog.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import { checkPWNEDPassword } from '@/services/API';
-import { sendVault } from '@/services/vault';
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import { hasProtocolRegex } from '@/services/utils';
+import { sendVault } from '@/services/vault';
 import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
 
 // NOTE: Vue gives error with window

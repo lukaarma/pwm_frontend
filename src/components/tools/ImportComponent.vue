@@ -61,7 +61,7 @@ import { mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 import { computed, ref, watch } from 'vue';
 import type vuetify from 'vuetify/components';
 
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import { importVault } from '@/services/importVault';
 import { PROVIDERS } from '@/types';
 

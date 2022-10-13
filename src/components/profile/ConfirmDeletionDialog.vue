@@ -73,7 +73,7 @@
 import { mdiLock, mdiEyeOff, mdiEye } from '@mdi/js';
 import { ref, computed } from 'vue';
 
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import API from '@/services/API';
 import cryptoUtils, { deriveMKeMPH } from '@/services/cryptoUtils';
 import { logout } from '@/services/utils';

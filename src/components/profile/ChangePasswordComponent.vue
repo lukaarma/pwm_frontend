@@ -61,9 +61,9 @@
 <script setup lang="ts">
 import { mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 import { ref } from 'vue';
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
 import type vuetify from 'vuetify/components';
 
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import changePassword from '@/services/changePassword';
 
 // DOM

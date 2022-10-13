@@ -71,11 +71,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import ChangePassword from '@/components/ChangePasswordComponent.vue';
-import ChangeUserInfo from '@/components/ChangeUserInfoComponent.vue';
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-import ConfirmDeletion from '@/components/ConfirmDeletionDialog.vue';
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import ChangePassword from '@/components//profile/ChangePasswordComponent.vue';
+import ChangeUserInfo from '@/components/profile/ChangeUserInfoComponent.vue';
+import ConfirmDeletion from '@/components//profile/ConfirmDeletionDialog.vue';
+import ConfirmationDialog from '@/components/overlays/ConfirmationDialog.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import { logout } from '@/services/utils';
 import { DELETE_SELECTION } from '@/types';
 

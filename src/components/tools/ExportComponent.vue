@@ -72,8 +72,8 @@ import { mdiLock, mdiEye, mdiEyeOff } from '@mdi/js';
 import { ref, computed } from 'vue';
 import type vuetify from 'vuetify/components';
 
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import ConfirmationDialog from '@/components/overlays/ConfirmationDialog.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import { exportJSON } from '@/services/exportVault';
 
 // DOM content

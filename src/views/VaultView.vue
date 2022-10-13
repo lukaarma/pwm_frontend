@@ -15,7 +15,7 @@
 
                 <v-window-item class="windows" value="Tools">
                     <PasswordChecker class="mt-1 mb-4 mx-1" />
-                    <PasswordGenerator class="mb-1 mx-1"/>
+                    <PasswordGenerator class="mb-1 mx-1" />
                 </v-window-item>
 
                 <v-window-item class="windows" value="Import">
@@ -43,11 +43,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import ExportComponent from '@/components/ExportComponent.vue';
-import ImportComponent from '@/components/ImportComponent.vue';
-import PasswordChecker from '@/components/PasswordCheckerComponent.vue';
-import PasswordGenerator from '@/components/PasswordGeneratorComponent.vue';
-import Vault from '@/components/VaultComponent.vue';
+import ExportComponent from '@/components/tools/ExportComponent.vue';
+import ImportComponent from '@/components/tools/ImportComponent.vue';
+import PasswordChecker from '@/components/tools/PasswordCheckerComponent.vue';
+import PasswordGenerator from '@/components/tools/PasswordGeneratorComponent.vue';
+import Vault from '@/components/vault/VaultComponent.vue';
 import { getVault } from '@/services/vault';
 
 const tab = ref('');

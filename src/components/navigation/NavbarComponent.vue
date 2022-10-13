@@ -84,7 +84,7 @@ import { mdiBrightness6, mdiWeatherNight } from '@mdi/js';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-import ProfileMenu from '@/components/ProfileMenuComponent.vue';
+import ProfileMenu from '@/components/navigation/ProfileMenuComponent.vue';
 import { userStore } from '@/stores/userStore';
 
 defineProps<{ darkMode: boolean }>();

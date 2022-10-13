@@ -19,8 +19,8 @@
 </style>
 
 <script setup lang="ts">
-import AppNavbar from '@/components/NavbarComponent.vue';
-import AppFooter from '@/components/FooterComponent.vue';
+import AppNavbar from '@/components/navigation/NavbarComponent.vue';
+import AppFooter from '@/components/navigation/FooterComponent.vue';
 import { useConfigStore } from '@/stores/configStore';
 
 const configStore = useConfigStore();

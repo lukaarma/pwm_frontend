@@ -90,7 +90,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type vuetify from 'vuetify/components';
 
-import Toast, { type ToastControls } from '@/components/ToastComponent.vue';
+import Toast, { type ToastControls } from '@/components/overlays/ToastComponent.vue';
 import LogoExtended from '@/components/LogoExtended.vue';
 import doSignup from '@/services/signup';
 
