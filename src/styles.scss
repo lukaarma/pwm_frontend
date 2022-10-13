@@ -30,16 +30,16 @@ p {
 }
 
 .toastContainer {
-    position: relative;
+    position: relative !important;
 }
 
 .formError {
-    position: absolute;
+    position: absolute !important;
     width: 100%;
 }
 
 .formToast {
-    position: absolute;
+    position: absolute !important;
     width: 100%;
     transform: translate(0, -120%);
 }
