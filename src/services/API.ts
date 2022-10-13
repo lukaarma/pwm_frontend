@@ -16,7 +16,7 @@ import type {
     WebMessage,
 } from '@/types';
 
-const API = axios.create({ baseURL: `${window.location.hostname}/api` });
+const API = axios.create({ baseURL: '/api' });
 
 async function login(user: LoginBody): Promise<APIResponse<LoginResponse>> {
     return API.post('/user/login', user)
