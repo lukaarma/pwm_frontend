@@ -16,8 +16,7 @@ import type {
     WebMessage,
 } from '@/types';
 
-// FIXME: hardcoded API endpoint BAD!!!
-const API = axios.create({ baseURL: 'https://dev.lukaarma.dynu.net/api' });
+const API = axios.create({ baseURL: `${window.location.hostname}/api` });
 
 async function login(user: LoginBody): Promise<APIResponse<LoginResponse>> {
     return API.post('/user/login', user)
@@ -206,11 +205,13 @@ async function changePassword(changePasswordInfo: ChangePasswordBody): Promise<A
 }
 
 async function deleteUser(masterPwdHash: string): Promise<APIResponse> {
-    return API.post('/user/delete',
+    return API.post(
+        '/user/delete',
         { masterPwdHash },
         {
             headers: { Authorization: userStore.state.authHeader },
-        })
+        }
+    )
         .then((res) => {
             return {
                 data: res.data,
@@ -238,7 +239,6 @@ async function deleteUser(masterPwdHash: string): Promise<APIResponse> {
             }
         });
 }
-
 
 async function getVault(): Promise<APIResponse<VaultResponse>> {
     return API.get('/vault', { headers: { Authorization: userStore.state.authHeader } })
