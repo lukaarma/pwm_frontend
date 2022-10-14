@@ -74,6 +74,11 @@
                                 :icon="mdiContentCopy"
                                 @click.stop="copyToClipBoard('Password')"
                             />
+                            <v-icon
+                                v-if="editMode"
+                                :icon="mdiAutorenew"
+                                @click.stop="randomPassword"
+                            />
                         </template>
                     </v-text-field>
 
@@ -228,6 +233,7 @@ Solution: we hijack the default overlay css only on this form (thanks to the ID)
 
 <script setup lang="ts">
 import {
+    mdiAutorenew,
     mdiKeyVariant,
     mdiEye,
     mdiEyeOff,
@@ -246,6 +252,7 @@ import { checkPWNEDPassword } from '@/services/API';
 import { hasProtocolRegex } from '@/services/utils';
 import { sendVault } from '@/services/vault';
 import { VAULT_A, VAULT_M, useVaultStore } from '@/stores/vaultStore';
+import { generatePassword } from '@/services/tools';
 
 // NOTE: Vue gives error with window
 const win = window;
@@ -517,5 +524,9 @@ function copyToClipBoard(field: 'Username' | 'Password') {
     toastControls.value.timeout = setTimeout(() => {
         toastControls.value.show = false;
     }, toastControls.value.timeoutLength);
+}
+
+function randomPassword() {
+    credential.value.password = generatePassword();
 }
 </script>
