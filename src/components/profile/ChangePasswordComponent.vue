@@ -104,15 +104,21 @@ const repeatPasswordRules = [
 
 async function doSubmit() {
     loading.value = true;
+    clearTimeout(toastControls.value.timeout);
 
     if ((await form.value?.validate())?.valid) {
         const res = await changePassword(password.value.old, password.value.new);
 
         if (res.ok) {
-            toastControls.value.type = 'info';
+            console.debug('[ChangePassword] success!');
+            toastControls.value.type = 'success';
             toastControls.value.msg = 'Password Changed';
             toastControls.value.show = true;
-            clear();
+            form.value?.reset();
+
+            toastControls.value.timeout = setTimeout(() => {
+                toastControls.value.show = false;
+            }, toastControls.value.timeoutLength);
         } else {
             console.debug(`[ChangePassword] failed: [${res.err.code}] ${res.err.message}`);
             toastControls.value.type = 'error';
