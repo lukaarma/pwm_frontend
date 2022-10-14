@@ -71,14 +71,16 @@
                                 @click.stop="hidePassword = !hidePassword"
                             />
                             <v-icon
-                                :icon="mdiContentCopy"
-                                @click.stop="copyToClipBoard('Password')"
-                            />
-                            <v-icon
                                 v-if="editMode"
                                 :icon="mdiAutorenew"
                                 @click.stop="randomPassword"
+                                class="mr-2"
                             />
+                            <v-icon
+                                :icon="mdiContentCopy"
+                                @click.stop="copyToClipBoard('Password')"
+                            />
+
                         </template>
                     </v-text-field>
 
