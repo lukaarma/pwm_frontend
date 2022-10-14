@@ -1,4 +1,3 @@
-<!-- TODO: Hide y overflow -->
 <template>
     <v-card elevation="3" class="fixedHeightCard">
         <v-container>

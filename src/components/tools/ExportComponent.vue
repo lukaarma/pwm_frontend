@@ -162,7 +162,6 @@ function abortExport() {
     loading.value = false;
 }
 
-// FIXME: on clear remove file but don't clear validation errors
 function clear() {
     selectedFormat.value = formats[0];
 }

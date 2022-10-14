@@ -1,4 +1,3 @@
-<!-- FIXME: form input have too much opacity if focused when readonly, style is confusing -->
 <template>
     <v-dialog
         :model-value="show"

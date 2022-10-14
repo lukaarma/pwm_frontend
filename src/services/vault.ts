@@ -7,7 +7,6 @@ import type { Result, VaultBody } from '@/types';
 
 export const localStorageVaultKey = 'vault';
 
-// TODO: if vault in local storage send to backend
 export async function getVault(): Promise<Result> {
     // if vault in local storage is not like our Vault set null
     const localVault: VaultBody | null = JSON.parse(
@@ -29,7 +28,7 @@ export async function getVault(): Promise<Result> {
             const res = await API.sendVault(localVault, false);
 
             // if cannot send vault, display error and retry button
-            // TODO: if a more recent vault exists delete local
+
             if (!res.data) {
                 if (
                     res.err?.code !== WEB_CODES.VAULT_LOWER_VERSION &&
@@ -55,9 +54,7 @@ export async function getVault(): Promise<Result> {
                     },
                 };
             }
-            console.debug(
-                '[getVault] Deleting old local copy'
-            );
+            console.debug('[getVault] Deleting old local copy');
             localStorage.removeItem(localStorageVaultKey);
         }
     }

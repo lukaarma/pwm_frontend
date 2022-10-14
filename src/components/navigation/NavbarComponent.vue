@@ -2,7 +2,6 @@
     <v-app-bar app floating elevation="1" height="60">
         <v-toolbar-items>
             <v-btn to="/">
-                <!-- TODO: is there a way to auto width respecting aspect ratio? -->
                 <v-img src="/assets/logo.svg" class="fillHeight" width="80" />
             </v-btn>
         </v-toolbar-items>

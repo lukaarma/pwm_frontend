@@ -2,7 +2,6 @@
     <v-menu bottom class="mx-4">
         <template v-slot:activator="{ props }">
             <v-btn v-bind="props" class="navbarIcon">
-                <!-- <v-avatar size="small" :icon="mdiAccountCircle" /> -->
                 <v-avatar color="primary">
                     <span class="white--text text-h6"> {{ userStore.state.userInitials }} </span>
                 </v-avatar>
@@ -26,20 +25,6 @@
                 <p class="text-caption">{{ userStore.state.email }}</p>
 
                 <v-btn to="/profile" variant="outlined" block class="mt-4 py-2"> Settings </v-btn>
-                <!-- TODO: add color change on hover -->
-                <!-- <v-hover v-slot="{ isHovering, props }">
-                    <v-btn
-                        @click="logout(isHovering)"
-                        :variant="isHovering ? 'elevated' : 'outlined'"
-                        block
-                        color="error"
-                        class="mt-2 py-2 alwaysBorder"
-                        :class="isHovering ? 'bg-error' : ''"
-                        v-bind="props"
-                    >
-                        Logout
-                    </v-btn>
-                </v-hover> -->
                 <v-btn @click="logout" block color="error" class="mt-2 py-2"> Logout </v-btn>
             </v-card-text>
         </v-card>

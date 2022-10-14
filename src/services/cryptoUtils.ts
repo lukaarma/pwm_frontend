@@ -4,7 +4,6 @@ import { VAULT_M, vaultStore, type Credential } from '@/stores/vaultStore';
 import { userStore } from '@/stores/userStore';
 import { isCredential, type VaultBody } from '@/types';
 
-// TODO: better error handling
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();

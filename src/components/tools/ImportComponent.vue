@@ -132,7 +132,6 @@ async function importFile() {
     loading.value = false;
 }
 
-// FIXME: on clear remove file but don't clear validation errors
 function clear() {
     inputFiles.value = [];
     selectedProvider.value = PROVIDERS.PWM;
